@@ -44,8 +44,6 @@ export default function App() {
 
       <Navbar />
       <Hero />
-      <MenuBarStrip />      
-      <InboxMockup />
       <FinalCTA />
       <FeatureTriage />
       <LogoCloud />
