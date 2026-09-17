@@ -22,7 +22,7 @@ const logos = [
 
 export default function LogoCloud() {
   return (
-    <section className="relative z-10 max-w-6xl mx-auto px-6 py-16 md:py-24">
+    <section id="marcas" className="relative z-10 max-w-6xl mx-auto px-6 py-16 md:py-24">
       <p className="text-center text-xs uppercase tracking-widest text-white/40">
         Marcas que confiaron @jualu.co
       </p>

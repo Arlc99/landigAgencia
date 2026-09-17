@@ -3,7 +3,7 @@ import { AppleButton, gradientStyle } from './primitives';
 
 export default function Hero() {
   return (
-    <section className="relative z-10 pt-16 md:pt-28 pb-20 text-center flex flex-col items-center px-6">
+    <section id='citas' className="relative z-10 pt-16 md:pt-28 pb-20 text-center flex flex-col items-center px-6">
       <motion.h1
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}

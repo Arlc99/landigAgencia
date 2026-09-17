@@ -83,7 +83,7 @@ const bodyParagraphs = [
 
 export default function InboxMockup() {
   return (
-    <section className="relative z-10 max-w-6xl mx-auto px-6 py-16 md:py-24">
+    <section id='comunicacion' className="relative z-10 max-w-6xl mx-auto px-6 py-16 md:py-24">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}

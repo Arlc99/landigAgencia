@@ -109,7 +109,7 @@ export default function Pricing() {
   const [yearly, setYearly] = useState(false);
 
   return (
-    <section id="planes" className="c3-pricing-section">
+    <section id="servicios" className="c3-pricing-section">
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <filter id="c3-noise">
           <feTurbulence
@@ -152,7 +152,7 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
-            <button className="c3-btn">Choose Plan</button>
+           
           </div>
         ))}
       </div>
@@ -169,4 +169,4 @@ export default function Pricing() {
       </div>
     </section>
   );
-}
+};
