@@ -22,7 +22,7 @@ export default function Hero() {
         transition={{ duration: 0.6, delay: 0.5 }}
         className="mt-8 text-white/60 max-w-md text-base leading-[1.5]"
       >
-        Tu marca merece destacar con propósito. Creamos estrategias que elevan su valor, fortalecen su identidad y la hacen imposible de ignorar.
+        Convierte tu presencia digital en un sistema para atraer y convertir clientes.
 
       </motion.p>
 
@@ -32,8 +32,18 @@ export default function Hero() {
         transition={{ duration: 0.6, delay: 0.7 }}
         className="mt-8 flex flex-col items-center gap-3"
       >
+
+        <span className="text-sm text-white/50">Diseñamos estrategias, canales y sistemas digitales que conectan tu marketing con tus ventas.</span>
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+        className="mt-8 flex flex-col items-center gap-3"
+      >
         <AppleButton />
-        <span className="text-xs text-white/40">Google meet</span>
+        <span className="text-xs text-white/40">[Solicitar diagnóstico]</span>
       </motion.div>
     </section>
   );

@@ -11,42 +11,81 @@ type Plan = {
 
 const plans: Plan[] = [
   {
-    tier: 'Free',
-    monthly: null,
-    yearly: null,
-    desc: 'REUNION DE 15 MINUTOS DE ACCESORAMIENTO',
+    tier: '01',
+    monthly: 'Landing pages',
+    yearly: 'Landing pages',
+    desc: 'Diseñamos páginas de aterrizaje optimizadas para la velocidad, la claridad y la acción.',
     features: [
-      'CONTEXTO',
-      'PEQUEÑOS CAMBIOS',
-      'IDEA ESTRATEGICA',
-      'HERRAMIENTAS',
-      'NUESTROS SERVICIOS',
+      'Optimización de velocidad',
+      'Diseño enfocado en conversión',
+      'Claridad en el mensaje',
+      'Llamados a la acción efectivos',
+      'Integración con analíticas',
     ],
   },
   {
-    tier: 'Standard',
-    monthly: '$9,99/m',
-    yearly: '$99,99/y',
-    desc: 'For freelancers and small teams who need more freedom and flexibility.',
+    tier: '02',
+    monthly: 'Captación de leads',
+    yearly: 'Captación de leads',
+    desc: 'Implementamos embudos de venta y formularios inteligentes para que ningún lead se pierda.',
     features: [
-      'Up to 50 projects in the cloud',
-      'Export up to 4K',
-      'Advanced editing toolkit',
-      'Team collaboration (up to 5 members)',
-      'Access to premium template library',
+      'Embudos de venta',
+      'Formularios inteligentes',
+      'Conexión con tu CRM',
+      'Seguimiento automatizado',
+      'Gestión de bases de datos',
     ],
   },
   {
-    tier: 'Pro',
-    monthly: '$19,99/m',
-    yearly: '$199,99/y',
-    desc: 'For studios, agencies, and professional creators working with brands.',
+    tier: '03',
+    monthly: 'Contenido estratégico',
+    yearly: 'Contenido estratégico',
+    desc: 'Creamos contenido que educa y posiciona tu marca como autoridad en tu sector.',
     features: [
-      'Unlimited projects',
-      'Export up to 8K + animations',
-      'AI-powered content generation tools',
-      'Unlimited team members',
-      'Brand customization',
+      'Textos persuasivos',
+      'Artículos para blog',
+      'Guiones para video',
+      'Estrategia de contenidos',
+      'Calendario editorial',
+    ],
+  },
+  {
+    tier: '04',
+    monthly: 'Gestión de canales',
+    yearly: 'Gestión de canales',
+    desc: 'Administramos tus redes sociales y campañas publicitarias midiendo cada métrica.',
+    features: [
+      'Gestión de redes sociales',
+      'Campañas publicitarias',
+      'Análisis de métricas (ROI)',
+      'Optimización de presupuesto',
+      'Reportes de rendimiento',
+    ],
+  },
+  {
+    tier: '05',
+    monthly: 'Presencia digital',
+    yearly: 'Presencia digital',
+    desc: 'Construimos toda tu estructura digital desde cero, desde la identidad hasta la técnica.',
+    features: [
+      'Identidad visual',
+      'Configuración técnica',
+      'Selección de plataformas',
+      'Estructura de marca',
+      'Lanzamiento inicial',
+    ],
+  },
+  {
+    tier: '06',
+    monthly: 'Otras soluciones',
+    yearly: 'Otras soluciones',
+    desc: 'Automatizaciones, email marketing, SEO técnico y consultoría personalizada.',
+    features: [
+      'Automatizaciones',
+      'Email marketing',
+      'SEO técnico',
+      'Consultoría personalizada',
+      'Adaptación a tu negocio',
     ],
     pro: true,
   },
@@ -99,6 +138,7 @@ export default function Pricing() {
           <div key={plan.tier} className={`c3-card ${plan.pro ? 'c3-card-pro' : ''}`}>
             <div className="c3-tier-small">{plan.tier}</div>
             <div className="c3-tier-large">
+              {/* Mantenemos la lógica original, pero como monthly y yearly son iguales, siempre muestra lo mismo */}
               {plan.monthly === null ? 'Free' : yearly ? plan.yearly : plan.monthly}
             </div>
             <div className="c3-desc">{plan.desc}</div>

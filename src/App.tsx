@@ -44,13 +44,14 @@ export default function App() {
 
       <Navbar />
       <Hero />
-      <MenuBarStrip />
+      <MenuBarStrip />      
       <InboxMockup />
+      <FinalCTA />
       <FeatureTriage />
       <LogoCloud />
       <Testimonials />
       <Pricing />
-      <FinalCTA />
+      
     </div>
   );
 }

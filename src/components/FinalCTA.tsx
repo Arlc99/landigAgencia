@@ -23,21 +23,35 @@ export default function FinalCTA() {
 
         <div className="relative">
           <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.02]">
-            Close the tabs.
+           Hacer marketing 
             <br />
-            Open your day.
+            no es suficiente.
           </h2>
           <p className="mt-6 text-white/60 max-w-md mx-auto text-sm leading-[1.6]">
-            Join thousands of builders, founders, and operators who treat email like a tool —
-            not an obligation.
+            
+             Crear contenido, invertir en publicidad o tener redes sociales <span className="text-cyan-400/70 font-bold">no garantiza resultados</span>, cuando todo funciona por separado.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <AppleButton label="Download Aura" />
-            <button className="inline-flex items-center gap-1 rounded-full border border-white/15 text-white text-sm font-medium px-5 py-3 hover:bg-white/5">
-              Talk to sales
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          {/* Contenedor flex para centrar y dar espacio */}
+          <div className="flex flex-wrap items-center justify-center gap-2 mt-8 mb-6 text-xs sm:text-sm font-medium">
+
+            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">
+              Sin estrategia
+            </span>
+            <span className="text-white/30">→</span>
+
+            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">
+               Sin estructura
+            </span>
+            <span className="text-white/30">→</span>
+
+            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-white/70">
+             Sin conversión.
+            </span>
+           
+
+
           </div>
+          
         </div>
       </motion.div>
     </section>

@@ -152,16 +152,14 @@ export default function FeatureTriage() {
         <SectionEyebrow label="Contactame" tag="instagram: @jualu.co" />
 
         <h2 className="mt-5 text-3xl md:text-5xl font-semibold tracking-tight leading-[1.02]">
-          Estrategia que conecta.
+          Construimos el camino hacia la venta.
           <br />
           Publicidad que convierte.
         </h2>
 
         <p className="mt-6 text-white/60 text-base leading-[1.6] max-w-md">
-          No se trata solo de hacer publicidad. Diseñamos estrategias
-          digitales que posicionan tu marca, atraen a las personas
-          correctas y convierten la atención en oportunidades reales
-          de negocio.
+          Conectamos tu presencia digital con la captación,   <span className="text-cyan-400/70 font-bold">gestión de leads y conversión</span>, 
+          creando una estructura clara para tu empresa.
         </p>
 
         <div className="mt-8 flex flex-wrap gap-2">
