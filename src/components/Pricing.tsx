@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { VerMasButton } from './primitives';
 
 type Plan = {
   tier: string;
@@ -152,6 +153,8 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
+            
+            <VerMasButton/>
            
           </div>
         ))}

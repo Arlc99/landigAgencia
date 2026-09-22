@@ -4,11 +4,12 @@ import { Menu, X } from 'lucide-react'; // Importamos X para cerrar
 import { MonogramLogo, AppleButton } from './primitives';
 
 const links = [
+  { label: 'Problema', href: '#problema' },
   { label: 'Contacto', href: '#contacto' },
   { label: 'Marcas', href: '#marcas' },
-  { label: 'Comunicación', href: '#comunicacion' },
+   { label: 'Procesos', href: '#procesos' },
   { label: 'Servicios', href: '#servicios' },
-  { label: 'Procesos', href: '#procesos' },
+ 
 ];
 
 export default function Navbar() {

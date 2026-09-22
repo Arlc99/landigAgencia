@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { ChevronRight, Video } from 'lucide-react';
+import { ChevronRight, Video, ExternalLink } from 'lucide-react';
 
 // En tu archivo primitives.tsx
 export function MonogramLogo({ className = "" }: { className?: string }) {
@@ -42,6 +42,30 @@ export function LogoMark({ className = 'w-8 h-8' }: { className?: string }) {
     </svg>
   );
 }
+
+export function VerMasButton({
+  label = 'ver mas',
+  full = false,
+}: {
+  label?: string;
+  full?: boolean;
+}) {
+  return (
+    <a
+      href = "#contacto"
+      
+      rel="noopener noreferrer"
+      className={`group inline-flex items-center justify-center gap-2 rounded-full bg-white text-black font-medium text-sm px-5 py-3 transition-all hover:bg-white/90 active:scale-[0.98] ${full ? 'w-full' : ''
+        }`}
+    >
+     
+       <ExternalLink className="w-4 h-4" />
+      <span>{label}</span>
+      <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-[1px]" />
+    </a>
+  );
+}
+
 
 export function AppleButton({
   label = 'Agendar cita',
