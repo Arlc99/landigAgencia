@@ -13,80 +13,62 @@ type Plan = {
 const plans: Plan[] = [
   {
     tier: '01',
-    monthly: 'Landing pages',
-    yearly: 'Landing pages',
-    desc: 'Diseñamos páginas de aterrizaje optimizadas para la velocidad, la claridad y la acción.',
+    monthly: 'Plan Anuncio Directo',
+    yearly: 'Estrategia + Meta Ads + Pauta',
+    desc: 'Estrategia de captación con anuncios en Meta dirigidos a redes sociales',
     features: [
-      'Optimización de velocidad',
-      'Diseño enfocado en conversión',
-      'Claridad en el mensaje',
-      'Llamados a la acción efectivos',
-      'Integración con analíticas',
+      'Estrategia de captación personalizada',
+      'Diseño de anuncios para Meta Ads',
+      'Segmentación de audiencia',
+      'Campañas dirigidas a redes sociales',
+      'Optimizacion',
+      'Reunión',
     ],
   },
   {
     tier: '02',
-    monthly: 'Captación de leads',
-    yearly: 'Captación de leads',
-    desc: 'Implementamos embudos de venta y formularios inteligentes para que ningún lead se pierda.',
+    monthly: 'Plan Landing Esencial',
+    yearly: 'Landing + Meta + Pauta',
+    desc: 'Landing con diseño responsive. con anuncios en Meta dirigidos.',
     features: [
-      'Embudos de venta',
-      'Formularios inteligentes',
-      'Conexión con tu CRM',
-      'Seguimiento automatizado',
-      'Gestión de bases de datos',
+      'Anuncio Personalizado',
+      'Landing page',
+      'Integración con Facebook e Instagram',
+      'Sección de servicios y ubicación',
+      'Diseño responsive (móvil y desktop)',
+      'hosting gratis',
+      'conexion a dominio(opcional)'
     ],
   },
   {
     tier: '03',
-    monthly: 'Contenido estratégico',
-    yearly: 'Contenido estratégico',
-    desc: 'Creamos contenido que educa y posiciona tu marca como autoridad en tu sector.',
+    monthly: 'Plan Landing Profesional',
+    yearly: 'Landing + Analítica + Pauta',
+    desc: 'Landing personalizada con Google Analytics y formulario profesional. La mejor opción para medir resultados reales.',
     features: [
-      'Textos persuasivos',
-      'Artículos para blog',
-      'Guiones para video',
-      'Estrategia de contenidos',
-      'Calendario editorial',
+      'Plan Landing Esencial',
+      'Google Analytics 4 configurado',
+      'Formulario profesional de captura',
+      'Botón de WhatsApp Business',
+      'Reportes semanales',
     ],
   },
   {
     tier: '04',
-    monthly: 'Gestión de canales',
-    yearly: 'Gestión de canales',
-    desc: 'Administramos tus redes sociales y campañas publicitarias midiendo cada métrica.',
+    monthly: 'Plan Automatización Premium',
+    yearly: 'Landing + Automatización + IA',
+    desc: 'Sistema completo de captación y automatización. Chatbot con IA, agendamiento automático y seguimiento de leads.',
     features: [
-      'Gestión de redes sociales',
-      'Campañas publicitarias',
-      'Análisis de métricas (ROI)',
-      'Optimización de presupuesto',
-      'Reportes de rendimiento',
-    ],
-  },
-  {
-    tier: '05',
-    monthly: 'Presencia digital',
-    yearly: 'Presencia digital',
-    desc: 'Construimos toda tu estructura digital desde cero, desde la identidad hasta la técnica.',
-    features: [
-      'Identidad visual',
-      'Configuración técnica',
-      'Selección de plataformas',
-      'Estructura de marca',
-      'Lanzamiento inicial',
-    ],
-  },
-  {
-    tier: '06',
-    monthly: 'Otras soluciones',
-    yearly: 'Otras soluciones',
-    desc: 'Automatizaciones, email marketing, SEO técnico y consultoría personalizada.',
-    features: [
-      'Automatizaciones',
-      'Email marketing',
-      'SEO técnico',
-      'Consultoría personalizada',
-      'Adaptación a tu negocio',
+      'Todo lo del Plan Landing Profesional',
+      'Chatbot con IA (API Key)',
+      'Automatización de citas',
+      'Respuestas automáticas por WhatsApp',
+      'Email marketing automatizado',
+      'Integración con Google Sheets / CRM',
+      'Pauta multi-canal (Google + Meta + TikTok)',
+      'Retargeting de visitantes',
+      'Reportes en tiempo real',
+      'Reunión estratégica',
     ],
     pro: true,
   },
@@ -110,7 +92,8 @@ export default function Pricing() {
   const [yearly, setYearly] = useState(false);
 
   return (
-    <section id="servicios" className="c3-pricing-section">
+    <section id="servicios" className="c3-pricing-section py-20">
+      {/* Filtro SVG (mantenido igual) */}
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <filter id="c3-noise">
           <feTurbulence
@@ -127,6 +110,7 @@ export default function Pricing() {
         </filter>
       </svg>
 
+      {/* Watermark (mantenido igual) */}
       <div className="c3-watermark-container">
         <div className="c3-watermark-main">
           <span className="c3-watermark-line-1">CRECE CON</span>
@@ -134,42 +118,80 @@ export default function Pricing() {
         </div>
       </div>
 
-      <div className="c3-grid">
+      {/* 
+        CONTENEDOR GRID 
+        - grid-cols-1 en móvil
+        - md:grid-cols-2 en tablet
+        - lg:grid-cols-4 en desktop
+        - items-stretch para que todas las tarjetas midan lo mismo
+      */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto px-4 items-stretch">
         {plans.map((plan) => (
-          <div key={plan.tier} className={`c3-card ${plan.pro ? 'c3-card-pro' : ''}`}>
-            <div className="c3-tier-small">{plan.tier}</div>
-            <div className="c3-tier-large">
-              {/* Mantenemos la lógica original, pero como monthly y yearly son iguales, siempre muestra lo mismo */}
-              {plan.monthly === null ? 'Free' : yearly ? plan.yearly : plan.monthly}
+          <div
+            key={plan.tier}
+            className={`
+              c3-card 
+              flex flex-col 
+              h-full 
+              min-h-[600px]  /* Altura mínima fija para consistencia */
+              p-6 
+              rounded-3xl 
+              bg-black/40 
+              backdrop-blur-md 
+              border border-white/10
+              ${plan.pro ? 'c3-card-pro border-blue-500/50 shadow-[0_0_30px_rgba(59,130,246,0.3)]' : ''}
+            `}
+          >
+            {/* Cabecera de la tarjeta */}
+            <div className="mb-4">
+              <div className="text-sm text-gray-400 mb-2 font-mono">{plan.tier}</div>
+              <div className="text-xl font-bold text-white mb-2 leading-tight">
+                {plan.monthly === null ? 'Free' : yearly ? plan.yearly : plan.monthly}
+              </div>
+              <div className="text-sm text-gray-400 leading-relaxed">
+                {plan.desc}
+              </div>
             </div>
-            <div className="c3-desc">{plan.desc}</div>
-            <ul className="c3-list">
+
+            {/* 
+              LISTA DE CARACTERÍSTICAS 
+              - flex-1: Ocupa todo el espacio sobrante, empujando el botón hacia abajo.
+              - overflow-y-auto: Si la lista es muy larga, permite scroll interno sin romper la tarjeta.
+            */}
+            <ul className="flex-1 flex flex-col gap-3 mb-6 overflow-y-auto pr-2 custom-scrollbar">
               {plan.features.map((feature) => (
-                <li key={feature}>
-                  <span className="c3-check">
+                <li key={feature} className="flex items-center gap-3 text-sm text-gray-300">
+                  <span className="c3-check flex-shrink-0 w-5 h-5 rounded-full bg-white/10 flex items-center justify-center">
                     <CheckIcon />
                   </span>
-                  <span>{feature}</span>
+                  <span className="leading-snug">{feature}</span>
                 </li>
               ))}
             </ul>
-            
-            <VerMasButton/>
-           
+
+            {/* 
+              BOTÓN 
+              - mt-auto: Asegura que el botón siempre esté al fondo.
+            */}
+            <div className="mt-auto pt-4 border-t border-white/5">
+              <VerMasButton />
+            </div>
+
           </div>
         ))}
       </div>
 
-      <div className="c3-toggle-wrap">
+      {/* Toggle Yearly (mantenido igual) */}
+      <div className="c3-toggle-wrap flex items-center justify-center gap-4 mt-12">
         <span className="text-sm text-white/70">Yearly</span>
         <button
-          className={`c3-toggle ${yearly ? 'active' : ''}`}
+          className={`c3-toggle relative w-14 h-8 rounded-full transition-colors ${yearly ? 'bg-blue-600' : 'bg-gray-700'}`}
           onClick={() => setYearly((v) => !v)}
           aria-pressed={yearly}
         >
-          <span className="c3-toggle-knob" />
+          <span className={`c3-toggle-knob absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${yearly ? 'translate-x-6' : ''}`} />
         </button>
       </div>
     </section>
   );
-};
+}

@@ -44,7 +44,7 @@ export function LogoMark({ className = 'w-8 h-8' }: { className?: string }) {
 }
 
 export function VerMasButton({
-  label = 'ver mas',
+  label = 'mas',
   full = false,
 }: {
   label?: string;
