@@ -7,6 +7,7 @@ import LogoCloud from './components/LogoCloud';
 import Testimonials from './components/Testimonials';
 import Pricing from './components/Pricing';
 import FinalCTA from './components/FinalCTA';
+import ChatBot from './components/chatBot';
 
 export default function App() {
   return (
@@ -48,7 +49,9 @@ export default function App() {
       <FeatureTriage />
       <LogoCloud />
       <Testimonials />
+      <ChatBot />
       <Pricing />
+
       
     </div>
   );
