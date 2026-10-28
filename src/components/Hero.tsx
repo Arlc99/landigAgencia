@@ -1,4 +1,6 @@
 import { motion } from 'motion/react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { AppleButton, gradientStyle } from './primitives';
 
 export default function Hero() {
@@ -42,7 +44,16 @@ export default function Hero() {
         transition={{ duration: 0.6, delay: 0.7 }}
         className="mt-8 flex flex-col items-center gap-3"
       >
-        <AppleButton />
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <AppleButton />
+          <Link
+            to="/diagnostico"
+            className="group inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/5 px-5 py-3 text-sm font-medium text-white transition-all hover:bg-white/10 active:scale-[0.98]"
+          >
+            Diagnóstico gratis
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-[1px]" />
+          </Link>
+        </div>
         <span className="text-xs text-white/40">[Solicitar diagnóstico]</span>
       </motion.div>
     </section>

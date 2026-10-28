@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Menu, X } from 'lucide-react'; // Importamos X para cerrar
+import { Link } from 'react-router-dom';
 import { MonogramLogo, AppleButton } from './primitives';
 
+const MotionLink = motion.create(Link);
+
 const links = [
-  { label: 'Problema', href: '#problema' },
-  { label: 'Contacto', href: '#contacto' },
-  { label: 'Marcas', href: '#marcas' },
-   { label: 'Procesos', href: '#procesos' },
-  { label: 'Servicios', href: '#servicios' },
+  { label: 'Problema', href: '/#problema' },
+  { label: 'Contacto', href: '/#contacto' },
+  { label: 'Diagnóstico', href: '/diagnostico' },
+  { label: 'Marcas', href: '/#marcas' },
+   { label: 'Procesos', href: '/#procesos' },
+  { label: 'Servicios', href: '/#servicios' },
  
 ];
 
@@ -23,21 +27,23 @@ export default function Navbar() {
       transition={{ duration: 0.6, ease: 'easeOut' }}
       className="relative z-50 max-w-6xl mx-auto px-6 h-20 flex items-center justify-between"
     >
-      <MonogramLogo />
+      <Link to="/" aria-label="Inicio" className="text-white">
+        <MonogramLogo />
+      </Link>
 
       {/* Enlaces de escritorio (ocultos en móvil) */}
       <div className="hidden md:flex gap-8">
         {links.map((link, i) => (
-          <motion.a
+          <MotionLink
             key={link.label}
-            href={link.href}
+            to={link.href}
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 + i * 0.05 }}
             className="text-white/70 text-sm font-medium hover:text-white transition-colors"
           >
             {link.label}
-          </motion.a>
+          </MotionLink>
         ))}
       </div>
 
@@ -67,14 +73,14 @@ export default function Navbar() {
           >
             <div className="flex flex-col px-6 py-6 gap-6">
               {links.map((link) => (
-                <a
+                <Link
                   key={link.label}
-                  href={link.href}
+                  to={link.href}
                   onClick={() => setIsOpen(false)} // Cierra el menú al hacer clic
                   className="text-white/70 text-base font-medium hover:text-white transition-colors"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
               
               {/* Botón de Apple dentro del menú móvil */}
