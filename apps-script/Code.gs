@@ -3,7 +3,7 @@
  *
  * Despliegue:
  *  1. Crea una hoja de cálculo → Extensiones → Apps Script y pega este archivo.
- *  2. (Recomendado) Configuración del proyecto → Propiedades del script →
+ *  2. (Obligatorio) Configuración del proyecto → Propiedades del script →
  *     agrega WEBHOOK_SECRET con el mismo valor que GOOGLE_SHEETS_WEBHOOK_SECRET.
  *  3. Implementar → Nueva implementación → Aplicación web.
  *     Ejecutar como: Yo · Quién tiene acceso: Cualquier persona.
@@ -50,7 +50,8 @@ function doPost(e) {
     }
 
     const secret = PropertiesService.getScriptProperties().getProperty('WEBHOOK_SECRET');
-    if (secret && body.secret !== secret) return respond({ ok: false, error: 'unauthorized' });
+    // Cierra por defecto: sin WEBHOOK_SECRET configurado nadie puede escribir en la hoja.
+    if (!secret || body.secret !== secret) return respond({ ok: false, error: 'unauthorized' });
 
     const lead = body.lead;
     const problem = validate(lead);
@@ -71,9 +72,9 @@ function doPost(e) {
   }
 }
 
-/** Comprobación rápida desde el navegador: abre la URL /exec. */
+/** No expone nada por GET: la hoja solo se escribe por POST con secreto. */
 function doGet() {
-  return respond({ ok: true, service: 'jualu-diagnostico-webhook' });
+  return respond({ ok: false });
 }
 
 function validate(lead) {

@@ -12,15 +12,22 @@ function devApi(env: Record<string, string>): Plugin {
   return {
     name: 'dev-api',
     configureServer(server: ViteDevServer) {
-      server.middlewares.use('/api/submit', (req, res, next) => {
-        void handle(server, env, req, res).catch(next);
-      });
+      for (const [route, name] of [['/api/submit', 'handleSubmit'], ['/api/contacto', 'handleContact']] as const) {
+        server.middlewares.use(route, (req, res, next) => {
+          void handle(server, env, req, res, route, name).catch(next);
+        });
+      }
     },
   };
 }
 
-async function handle(server: ViteDevServer, env: Record<string, string>, req: IncomingMessage, res: ServerResponse) {
-  const mod = (await server.ssrLoadModule('/server/handlers.ts')) as Record<string, Handler>;
+async function handle(server: ViteDevServer, env: Record<string, string>, req: IncomingMessage,
+  res: ServerResponse,
+  route: string,
+  name: string,
+) {
+  const file = name === 'handleSubmit' ? '/server/handlers.ts' : '/server/contact.ts';
+  const mod = (await server.ssrLoadModule(file)) as Record<string, Handler>;
 
   const chunks: Buffer[] = [];
   for await (const chunk of req) chunks.push(chunk as Buffer);
@@ -29,13 +36,13 @@ async function handle(server: ViteDevServer, env: Record<string, string>, req: I
     if (typeof value === 'string') headers.set(key, value);
   }
   const hasBody = req.method !== 'GET' && req.method !== 'HEAD';
-  const request = new Request(`http://${req.headers.host ?? 'localhost'}/api/submit`, {
+  const request = new Request(`http://${req.headers.host ?? 'localhost'}${route}`, {
     method: req.method,
     headers,
     body: hasBody ? Buffer.concat(chunks) : undefined,
   });
 
-  const response = await mod.handleSubmit(request, { ...process.env, ...env });
+  const response = await mod[name]!(request, { ...process.env, ...env });
   res.statusCode = response.status;
   response.headers.forEach((value, key) => res.setHeader(key, value));
   res.end(Buffer.from(await response.arrayBuffer()));

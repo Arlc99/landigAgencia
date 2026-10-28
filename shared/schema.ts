@@ -89,10 +89,10 @@ export function validateDiagnosis(
 export const surveySchema = z
   .object({
     contacto: contactSchema,
-    objetivo: z.enum(OBJECTIVE_IDS, { errorMap: () => ({ message: 'Selecciona un objetivo.' }) }),
+    objetivo: z.enum(OBJECTIVE_IDS, { error: 'Selecciona un objetivo.' }),
     diagnostico: z.record(z.string().max(40), z.union([z.string().max(600), z.array(z.string().max(60)).max(10)])),
-    presupuesto: z.enum(BUDGET_IDS, { errorMap: () => ({ message: 'Selecciona un rango de inversión.' }) }),
-    urgencia: z.enum(URGENCY_IDS, { errorMap: () => ({ message: 'Selecciona el nivel de urgencia.' }) }),
+    presupuesto: z.enum(BUDGET_IDS, { error: 'Selecciona un rango de inversión.' }),
+    urgencia: z.enum(URGENCY_IDS, { error: 'Selecciona el nivel de urgencia.' }),
   })
   .superRefine((value, ctx) => {
     const errors = validateDiagnosis(value.objetivo, value.diagnostico)

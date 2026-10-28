@@ -4,11 +4,6 @@ import { SectionEyebrow } from './primitives';
 
 const chips = ['Estrategia', 'Pauta digital', 'leads', 'Ventas'];
 
-const GOOGLE_SCRIPT_URL =
-  'https://script.google.com/macros/s/AKfycbxeSwjDJh14ufsznmwH3qs7u1rCDxVnEuC9tX2bAyKBrNd-JdiAkVsF7ki3yQI1r3YOQA/exec';
-
-const SECRET_TOKEN = 'jualu-2026-x7f9'; // debe coincidir con el del Apps Script
-
 interface FormData {
   negocio: string;
   correo: string;
@@ -112,12 +107,12 @@ export default function FeatureTriage() {
     setEnviado(false);
 
     try {
-      await fetch(GOOGLE_SCRIPT_URL, {
+      const response = await fetch('/api/contacto', {
         method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ ...formData, token: SECRET_TOKEN }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
       });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       setEnviado(true);
       setFormData({ negocio: '', correo: '', celular: '', mensaje: '' });
