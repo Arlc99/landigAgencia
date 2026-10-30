@@ -36,8 +36,12 @@ export async function readJson(request: Request): Promise<unknown> {
 // Límite best-effort por instancia: en serverless cada instancia tiene su propia memoria.
 const buckets = new Map<string, { count: number; resetAt: number }>()
 
+export function clientIp(request: Request): string {
+  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'local'
+}
+
 export function rateLimit(request: Request, scope: string, limit: number, windowMs: number): void {
-  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'local'
+  const ip = clientIp(request)
   const key = `${scope}:${ip}`
   const now = Date.now()
   const bucket = buckets.get(key)

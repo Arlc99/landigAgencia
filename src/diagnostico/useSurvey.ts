@@ -35,11 +35,14 @@ interface SurveyState {
   direction: 1 | -1
   draft: SurveyDraft
   submissionId: string
+  /** Pase firmado que entrega el servidor al resolver el captcha en el paso 1. */
+  pase?: string
 }
 
 type Action =
   | { type: 'contact'; field: keyof ContactInfo; value: string }
   | { type: 'consent'; value: boolean }
+  | { type: 'pase'; value: string }
   | { type: 'objective'; value: ObjectiveId }
   | { type: 'diagnosis'; id: string; value: string | string[] | undefined }
   | { type: 'budget'; value: BudgetId }
@@ -47,7 +50,7 @@ type Action =
   | { type: 'goto'; step: number }
   | { type: 'reset' }
 
-const STORAGE_KEY = 'jualu-diagnostico-survey:v2'
+export const SURVEY_STORAGE_KEY = 'jualu-diagnostico-survey:v3'
 
 function initialState(): SurveyState {
   return {
@@ -71,6 +74,8 @@ function reducer(state: SurveyState, action: Action): SurveyState {
   switch (action.type) {
     case 'contact':
       return { ...state, draft: { ...draft, contacto: { ...draft.contacto, [action.field]: action.value } } }
+    case 'pase':
+      return { ...state, pase: action.value }
     case 'consent':
       return { ...state, draft: { ...draft, consentimiento: action.value } }
     case 'objective':
@@ -140,9 +145,9 @@ export function finalizeDraft(draft: SurveyDraft): { answers: SurveyAnswers } | 
 }
 
 export function useSurvey() {
-  const [state, dispatch] = useReducer(reducer, undefined, () => loadSession<SurveyState>(STORAGE_KEY) ?? initialState())
+  const [state, dispatch] = useReducer(reducer, undefined, () => loadSession<SurveyState>(SURVEY_STORAGE_KEY) ?? initialState())
 
-  useEffect(() => saveSession(STORAGE_KEY, state), [state])
+  useEffect(() => saveSession(SURVEY_STORAGE_KEY, state), [state])
 
   const errors = useMemo(() => validateStep(state.step, state.draft), [state.step, state.draft])
 

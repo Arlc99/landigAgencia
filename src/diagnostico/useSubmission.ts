@@ -8,54 +8,67 @@ export type SubmissionPhase = 'idle' | 'sending' | 'done' | 'error'
 export interface SubmissionState {
   phase: SubmissionPhase
   error: string | null
+  /** Código estable del servidor (p. ej. "daily_limit"); sirve para decidir qué botones mostrar. */
+  errorCode: string | null
   answers: SurveyAnswers | null
   diagnostico: ClientDiagnosis | null
 }
 
-const STORAGE_KEY = 'jualu-diagnostico-submission:v3'
+export const SUBMISSION_STORAGE_KEY = 'jualu-diagnostico-submission:v3'
 const MIN_SENDING_MS = 2200
 
-const IDLE: SubmissionState = { phase: 'idle', error: null, answers: null, diagnostico: null }
+const IDLE: SubmissionState = { phase: 'idle', error: null, errorCode: null, answers: null, diagnostico: null }
 
 function restore(): SubmissionState {
-  const saved = loadSession<SubmissionState>(STORAGE_KEY)
+  const saved = loadSession<SubmissionState>(SUBMISSION_STORAGE_KEY)
   if (!saved) return IDLE
   // Una recarga a mitad de envío pasa a error para reintentar; el submissionId evita duplicados.
   if (saved.phase === 'sending') {
-    return { ...saved, phase: 'error', error: 'El envío se interrumpió. Puedes reintentarlo sin perder tus respuestas.' }
+    return {
+      ...saved,
+      phase: 'error',
+      error: 'El envío se interrumpió. Puedes reintentarlo sin perder tus respuestas.',
+      errorCode: null,
+    }
   }
   return saved
 }
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-export function useSubmission(submissionId: string) {
+export function useSubmission(submissionId: string, pase?: string) {
   const [state, setState] = useState<SubmissionState>(restore)
   const inFlight = useRef(false)
 
-  useEffect(() => saveSession(STORAGE_KEY, state), [state])
+  useEffect(() => saveSession(SUBMISSION_STORAGE_KEY, state), [state])
 
   const submit = useCallback(
     async (answers: SurveyAnswers, honeypot = '') => {
       // Evita envíos duplicados por doble clic o reintentos concurrentes.
       if (inFlight.current) return
       inFlight.current = true
-      setState({ phase: 'sending', error: null, answers, diagnostico: null })
+      setState({ phase: 'sending', error: null, errorCode: null, answers, diagnostico: null })
       try {
         // La animación dura un mínimo también cuando hay error, para no mostrar un parpadeo.
-        const pending = submitSurvey(submissionId, answers, honeypot)
+        const pending = submitSurvey(submissionId, answers, honeypot, pase)
         await Promise.allSettled([pending, wait(MIN_SENDING_MS)])
         const response = await pending
-        setState({ phase: 'done', error: null, answers, diagnostico: response.diagnostico })
+        setState({ phase: 'done', error: null, errorCode: null, answers, diagnostico: response.diagnostico })
       } catch (error) {
         const message =
           error instanceof ApiClientError ? error.message : 'Ocurrió un error inesperado. Inténtalo de nuevo.'
-        setState({ phase: 'error', error: message, answers, diagnostico: null })
+        setState({
+          phase: 'error',
+          error: message,
+          errorCode: error instanceof ApiClientError ? error.code : null,
+          answers,
+          diagnostico: null,
+        })
       } finally {
         inFlight.current = false
       }
     },
-    [submissionId],
+    [submissionId, pase],
   )
 
   const retry = useCallback(() => {

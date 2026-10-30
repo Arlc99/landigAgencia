@@ -1,17 +1,29 @@
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { gradientStyle } from '../components/primitives';
-import { saveProgress } from '../diagnostico/api';
+import { saveProgress, startSurvey } from '../diagnostico/api';
 import { AnalyzingScreen, ResultScreen } from '../diagnostico/Screens';
+import { clearSession } from '../diagnostico/storage';
 import { SurveyWizard } from '../diagnostico/SurveyWizard';
-import { useSubmission } from '../diagnostico/useSubmission';
-import { useSurvey } from '../diagnostico/useSurvey';
+import { SUBMISSION_STORAGE_KEY, useSubmission } from '../diagnostico/useSubmission';
+import { SURVEY_STORAGE_KEY, useSurvey } from '../diagnostico/useSurvey';
 
 export default function Diagnostico() {
   const survey = useSurvey();
-  const submission = useSubmission(survey.submissionId);
-  const { reset: resetSurvey, submissionId } = survey;
+  const submission = useSubmission(survey.submissionId, survey.pase);
+  const { reset: resetSurvey, submissionId, pase, dispatch } = survey;
   const { reset: resetSubmission } = submission;
+
+  // Al abandonar la página con un diagnóstico ya entregado, se borra todo: al volver se empieza con el formulario limpio.
+  // (Solo se borra el almacenamiento: si el efecto se repite en desarrollo, el estado en memoria lo vuelve a guardar.)
+  const phaseRef = useRef(submission.phase);
+  phaseRef.current = submission.phase;
+  useEffect(
+    () => () => {
+      if (phaseRef.current === 'done') clearSession(SURVEY_STORAGE_KEY, SUBMISSION_STORAGE_KEY);
+    },
+    [],
+  );
 
   const restart = useCallback(() => {
     resetSubmission();
@@ -20,8 +32,16 @@ export default function Diagnostico() {
 
   const handleProgress = useCallback(
     (paso: number, draft: Parameters<typeof saveProgress>[2], honeypot: string) =>
-      saveProgress(submissionId, paso, draft, honeypot),
-    [submissionId],
+      saveProgress(submissionId, paso, draft, honeypot, pase),
+    [submissionId, pase],
+  );
+
+  const handleStart = useCallback(
+    async (draft: Parameters<typeof saveProgress>[2], honeypot: string, token: string) => {
+      const newPass = await startSurvey(submissionId, draft, honeypot, token);
+      if (newPass) dispatch({ type: 'pase', value: newPass });
+    },
+    [submissionId, dispatch],
   );
 
   const view =
@@ -72,12 +92,18 @@ export default function Diagnostico() {
               transition={{ duration: 0.25 }}
             >
               {view === 'survey' && (
-                <SurveyWizard survey={survey} onSubmit={submission.submit} onProgress={handleProgress} />
+                <SurveyWizard
+                  survey={survey}
+                  onSubmit={submission.submit}
+                  onProgress={handleProgress}
+                  onStart={handleStart}
+                />
               )}
               {view === 'progress' && (
                 <AnalyzingScreen
                   phase={submission.phase}
                   error={submission.error}
+                  errorCode={submission.errorCode}
                   onRetry={submission.retry}
                   onEdit={resetSubmission}
                 />

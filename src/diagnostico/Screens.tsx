@@ -19,15 +19,19 @@ const HINTS = [
 export function AnalyzingScreen({
   phase,
   error,
+  errorCode,
   onRetry,
   onEdit,
 }: {
   phase: SubmissionPhase;
   error: string | null;
+  errorCode?: string | null;
   onRetry: () => void;
   onEdit: () => void;
 }) {
   const isError = phase === 'error';
+  // Con el límite diario alcanzado reintentar no sirve: se invita a agendar una cita.
+  const blocked = isError && (errorCode === 'daily_limit' || errorCode === 'already_done');
 
   return (
     <div className="flex flex-col items-center py-4 text-center" aria-live="polite">
@@ -40,7 +44,7 @@ export function AnalyzingScreen({
       )}
 
       <h2 className="mt-8 text-2xl font-semibold tracking-tight">
-        {isError ? 'No pudimos preparar tu diagnóstico' : 'Preparando tu diagnóstico'}
+        {blocked ? (errorCode === 'already_done' ? 'Ya tienes tu diagnóstico' : 'Llegaste al límite de hoy') : isError ? 'No pudimos preparar tu diagnóstico' : 'Preparando tu diagnóstico'}
       </h2>
 
       {isError ? (
@@ -54,7 +58,24 @@ export function AnalyzingScreen({
         </>
       )}
 
-      {isError && (
+      {blocked && (
+        <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:flex-row">
+          <LinkButton
+            href={CALENDAR_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            icon={<CalendarCheck className="h-4 w-4" aria-hidden />}
+            className="flex-1"
+          >
+            Agendar cita
+          </LinkButton>
+          <LinkButton variant="secondary" href="/" className="flex-1">
+            Volver al inicio
+          </LinkButton>
+        </div>
+      )}
+
+      {isError && !blocked && (
         <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:flex-row">
           <Button onClick={onRetry} icon={<RotateCcw className="h-4 w-4" aria-hidden />} className="flex-1">
             Reintentar
@@ -162,8 +183,9 @@ function SalesRoute({ active }: { active: Set<string> }) {
 }
 
 /**
- * Diagnóstico breve para el cliente. Todo se muestra como texto plano (nunca HTML).
- * La clasificación y la estrategia de venta son internas y no llegan aquí.
+ * Diagnóstico mínimo para el cliente: dónde está hoy, 3 problemas y una solución de una línea por cada uno.
+ * La idea es que vea que tiene problemas con solución y que esa solución la da JUALU.
+ * Todo se muestra como texto plano (nunca HTML). La clasificación y la estrategia de venta son internas.
  */
 export function ResultScreen({
   answers,
@@ -175,9 +197,9 @@ export function ResultScreen({
   onRestart: () => void;
 }) {
   const firstName = answers.contacto.nombre.split(/\s+/)[0] ?? answers.contacto.nombre;
-  const icons = new Set(diagnostico.prioridades.map((p) => p.icono));
-  const text = diagnostico.prioridades
-    .flatMap((p) => [p.titulo, p.por_que, ...p.incluye])
+  const icons = new Set(diagnostico.problemas.map((p) => p.icono));
+  const text = diagnostico.problemas
+    .flatMap((p) => [p.problema, p.solucion])
     .join(' ')
     .toLowerCase();
   const active = new Set(
@@ -200,14 +222,18 @@ export function ResultScreen({
       </header>
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-        <h2 id="diagnostico-titulo" className="mt-6 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+        <p className="mt-6 text-xs font-medium uppercase tracking-widest text-cyan-300/80">Dónde estás hoy</p>
+        <h2 id="diagnostico-titulo" className="mt-1.5 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
           {diagnostico.titulo}
         </h2>
         <p className="mt-3 text-[15px] leading-relaxed text-white/65">{diagnostico.resumen}</p>
       </motion.div>
 
-      <ol className="mt-7 space-y-4" aria-label="Lo que necesita tu negocio">
-        {diagnostico.prioridades.map((item, index) => {
+      <p className="mt-7 text-xs font-medium uppercase tracking-widest text-amber-300/80">
+        Lo que está frenando tus ventas
+      </p>
+      <ol className="mt-3 space-y-3" aria-label="Problemas encontrados">
+        {diagnostico.problemas.map((item, index) => {
           const Icon = PRIORITY_ICONS[item.icono];
           return (
             <motion.li
@@ -215,33 +241,27 @@ export function ResultScreen({
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, delay: 0.15 + index * 0.12 }}
-              className="liquid-glass rounded-2xl p-5"
+              className="liquid-glass rounded-2xl p-4 sm:p-5"
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3.5">
                 <span
-                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/30 text-cyan-200"
-                  style={{ background: 'linear-gradient(135deg, rgba(0,210,255,0.22), rgba(11,37,81,0.5))' }}
+                  className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-amber-300/30 bg-amber-400/10 text-amber-200"
                   aria-hidden
                 >
-                  <Icon className="h-7 w-7" />
+                  <Icon className="h-6 w-6" />
                 </span>
-                <div className="min-w-0">
-                  <p className="text-[11px] font-medium uppercase tracking-widest text-cyan-300/80">Necesidad {index + 1}</p>
-                  <h3 className="mt-0.5 text-[18px] font-semibold leading-snug">{item.titulo}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-white/55">{item.por_que}</p>
+                <div className="min-w-0 pt-0.5">
+                  <p className="text-[11px] font-medium uppercase tracking-widest text-white/40">Problema {index + 1}</p>
+                  <h3 className="mt-0.5 text-[16px] font-semibold leading-snug">{item.problema}</h3>
                 </div>
               </div>
-              <ul className="mt-4 grid gap-2 sm:grid-cols-1">
-                {item.incluye.map((punto, i) => (
-                  <li
-                    key={i}
-                    className="flex items-start gap-2.5 rounded-xl bg-white/[0.04] px-3.5 py-2.5 text-sm leading-snug text-white/85"
-                  >
-                    <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
-                    <span>{punto}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-cyan-300/20 bg-cyan-400/[0.07] px-3.5 py-2.5">
+                <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
+                <p className="text-sm leading-snug text-white/90">
+                  <span className="font-semibold text-cyan-200">Solución JUALU: </span>
+                  {item.solucion}
+                </p>
+              </div>
             </motion.li>
           );
         })}
@@ -250,7 +270,7 @@ export function ResultScreen({
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
+        transition={{ duration: 0.5, delay: 0.55 }}
         className="mt-6 rounded-2xl border border-cyan-300/25 p-5"
         style={{ background: 'linear-gradient(135deg, rgba(0,210,255,0.1), rgba(11,37,81,0.35))' }}
         aria-label="Tu sistema de ventas"
@@ -261,10 +281,9 @@ export function ResultScreen({
         <div className="mt-4">
           <SalesRoute active={active} />
         </div>
-        <p className="mt-5 text-center text-sm leading-relaxed text-white/75">{diagnostico.siguiente_nivel}</p>
       </motion.section>
 
-      <p className="mt-6 text-center text-[15px] font-medium leading-relaxed text-white/80">{diagnostico.cierre}</p>
+      <p className="mt-6 text-center text-[15px] font-medium leading-relaxed text-white/85">{diagnostico.cierre}</p>
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <LinkButton

@@ -71,6 +71,9 @@ function doPost(e) {
     // Cierra por defecto: sin WEBHOOK_SECRET configurado nadie puede escribir en la hoja.
     if (!secret || body.secret !== secret) return respond({ ok: false, error: 'unauthorized' });
 
+    // Consulta de cupo: ¿cuántos diagnósticos completó este correo en las últimas 24 horas? (solo lectura)
+    if (body.accion === 'cuota') return respond(dailyUsage(body.correo, body.submissionId));
+
     const lead = body.lead;
     const problem = validate(lead);
     if (problem) return respond({ ok: false, error: problem });
@@ -239,6 +242,56 @@ function validateEmail(lead, email) {
  */
 function autorizarCorreo() {
   console.log('Cuota diaria de correos restante: ' + MailApp.getRemainingDailyQuota());
+}
+
+/**
+ * Cuenta los diagnósticos "Completo" del correo en las últimas 24 horas y si este envío (ID) ya se completó.
+ * El servidor lo consulta ANTES de gastar tokens de IA, para limitar cada correo a pocos diagnósticos al día.
+ */
+function dailyUsage(correo, submissionId) {
+  if (typeof correo !== 'string' || !correo.trim()) return { ok: false, error: 'missing_correo' };
+  const sheet = getSheet();
+  const columns = ensureColumns(sheet);
+  const rows = sheet.getLastRow() - 1;
+  if (rows < 1) return { ok: true, completados: 0, mismoId: false };
+
+  const width = Math.max(columns.correo, columns.estado, columns.actualizado, columns.fecha, columns.submissionId) + 1;
+  const data = sheet.getRange(2, 1, rows, width).getValues();
+  const target = normalizeEmail(correo);
+  const since = Date.now() - 24 * 60 * 60 * 1000;
+  let completados = 0;
+  let mismoId = false;
+
+  for (let i = 0; i < data.length; i++) {
+    const row = data[i];
+    if (row[columns.estado] !== 'Completo') continue;
+    if (String(row[columns.submissionId]) === String(submissionId)) mismoId = true;
+    if (normalizeEmail(row[columns.correo]) !== target) continue;
+    const when = toTime(row[columns.actualizado] || row[columns.fecha]);
+    if (when >= since) completados++;
+  }
+  return { ok: true, completados: completados, mismoId: mismoId };
+}
+
+/** Misma persona aunque cambie mayúsculas, "+alias" o los puntos de Gmail (a.b+x@gmail.com = ab@gmail.com). */
+function normalizeEmail(value) {
+  const text = String(value || '').trim().toLowerCase();
+  const at = text.lastIndexOf('@');
+  if (at < 1) return text;
+  let local = text.slice(0, at).split('+')[0];
+  let domain = text.slice(at + 1);
+  if (domain === 'gmail.com' || domain === 'googlemail.com') {
+    local = local.replace(/\./g, '');
+    domain = 'gmail.com';
+  }
+  return local + '@' + domain;
+}
+
+/** Hora en milisegundos de una celda que puede ser texto ISO o una fecha que Sheets ya convirtió. */
+function toTime(value) {
+  if (value instanceof Date) return value.getTime();
+  const parsed = Date.parse(String(value));
+  return isNaN(parsed) ? 0 : parsed;
 }
 
 /** "3 de 5" → 3 (0 si no se entiende). */

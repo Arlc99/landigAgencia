@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { SurveyAnswers } from '../../shared/schema';
 import { BudgetStep, ContactStep, DiagnosisStep, ObjectiveStep, UrgencyStep } from './Steps';
+import { captchaConfigured } from '../components/Turnstile';
 import { Button } from './ui';
 import { finalizeDraft, LAST_STEP, STEPS, type SurveyDraft, type useSurvey } from './useSurvey';
 
@@ -12,6 +13,8 @@ interface Props {
   onSubmit: (answers: SurveyAnswers, honeypot: string) => void;
   /** Se llama al completar cada paso para guardar el avance. */
   onProgress: (paso: number, draft: SurveyDraft, honeypot: string) => void;
+  /** Primer guardado con el token del captcha: debe resolverse para poder avanzar. */
+  onStart: (draft: SurveyDraft, honeypot: string, token: string) => Promise<void>;
 }
 
 const variants = {
@@ -89,10 +92,15 @@ function ProgressSteps({
   );
 }
 
-export function SurveyWizard({ survey, onSubmit, onProgress }: Props) {
-  const { step, maxStep, direction, draft, errors, dispatch, goTo } = survey;
+export function SurveyWizard({ survey, onSubmit, onProgress, onStart }: Props) {
+  const { step, maxStep, direction, draft, errors, dispatch, goTo, pase } = survey;
   const [attempted, setAttempted] = useState<Record<number, boolean>>({});
   const [honeypot, setHoneypot] = useState('');
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const [captchaError, setCaptchaError] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const needsCaptcha = captchaConfigured && !pase;
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
 
@@ -112,10 +120,30 @@ export function SurveyWizard({ survey, onSubmit, onProgress }: Props) {
   const showAllErrors = Boolean(attempted[step]);
   const meta = STEPS[step] ?? STEPS[0];
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (Object.keys(errors).length) {
       setAttempted((a) => ({ ...a, [step]: true }));
+      return;
+    }
+    if (step === 0 && needsCaptcha) {
+      // El captcha se resuelve una sola vez, aquí: el servidor entrega un pase para el resto de la encuesta.
+      if (!captchaToken) {
+        setCaptchaError('Estamos verificando que eres una persona. Espera un momento e inténtalo de nuevo.');
+        return;
+      }
+      setVerifying(true);
+      setCaptchaError('');
+      try {
+        await onStart(draft, honeypot, captchaToken);
+        goTo(1);
+      } catch (error) {
+        setCaptchaError(error instanceof Error ? error.message : 'No pudimos verificar tu solicitud. Inténtalo de nuevo.');
+        setCaptchaToken('');
+        setCaptchaKey((k) => k + 1);
+      } finally {
+        setVerifying(false);
+      }
       return;
     }
     if (step < LAST_STEP) {
@@ -167,7 +195,18 @@ export function SurveyWizard({ survey, onSubmit, onProgress }: Props) {
             </header>
 
             {step === 0 && (
-              <ContactStep contacto={draft.contacto} consentimiento={draft.consentimiento} errors={errors} showAllErrors={showAllErrors} dispatch={dispatch} />
+              <ContactStep contacto={draft.contacto} consentimiento={draft.consentimiento}
+                errors={errors}
+                showAllErrors={showAllErrors}
+                dispatch={dispatch}
+                showCaptcha={needsCaptcha}
+                onCaptchaToken={(token) => {
+                  setCaptchaToken(token);
+                  if (token) setCaptchaError('');
+                }}
+                captchaKey={captchaKey}
+                captchaError={captchaError}
+              />
             )}
             {step === 1 && (
               <ObjectiveStep value={draft.objetivo} error={showAllErrors ? errors.objetivo : undefined} dispatch={dispatch} />
@@ -204,6 +243,7 @@ export function SurveyWizard({ survey, onSubmit, onProgress }: Props) {
         </Button>
         <Button
           type="submit"
+          loading={verifying}
           iconRight={
             step === LAST_STEP ? <Sparkles className="h-4 w-4" aria-hidden /> : <ArrowRight className="h-4 w-4" aria-hidden />
           }

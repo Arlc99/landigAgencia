@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { SectionEyebrow } from './primitives';
+import { Turnstile, captchaConfigured } from './Turnstile';
 
 const chips = ['Estrategia', 'Pauta digital', 'leads', 'Ventas'];
 
@@ -59,6 +60,12 @@ export default function FeatureTriage() {
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  // Anti-spam: campo trampa invisible, tiempo de llenado y captcha (Cloudflare Turnstile).
+  const [website, setWebsite] = useState('');
+  const startedAt = useRef(Date.now());
+  const [captchaToken, setCaptchaToken] = useState('');
+  const [captchaKey, setCaptchaKey] = useState(0);
+  const [formError, setFormError] = useState('');
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -103,16 +110,30 @@ export default function FeatureTriage() {
       return; // no envía si hay errores
     }
 
+    if (captchaConfigured && !captchaToken) {
+      setFormError('Estamos verificando que eres una persona. Espera un momento e inténtalo de nuevo.');
+      return;
+    }
+
     setEnviando(true);
     setEnviado(false);
+    setFormError('');
 
     try {
       const response = await fetch('/api/contacto', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          website: website || undefined,
+          tardo: Date.now() - startedAt.current,
+          turnstileToken: captchaToken || undefined,
+        }),
       });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
+        throw new Error(data?.error?.message ?? `HTTP ${response.status}`);
+      }
 
       setEnviado(true);
       setFormData({ negocio: '', correo: '', celular: '', mensaje: '' });
@@ -120,8 +141,11 @@ export default function FeatureTriage() {
       setErrors({});
     } catch (error) {
       console.error('Error enviando formulario:', error);
-      alert('Error al enviar la solicitud.');
+      setFormError(error instanceof Error ? error.message : 'Error al enviar la solicitud.');
     } finally {
+      // Los tokens del captcha son de un solo uso: se pide uno nuevo para un próximo envío.
+      setCaptchaToken('');
+      setCaptchaKey((k) => k + 1);
       setEnviando(false);
     }
   };
@@ -240,6 +264,21 @@ export default function FeatureTriage() {
               <p className="text-xs text-red-400 mt-1 px-1">{errors.mensaje}</p>
             )}
           </div>
+
+          {/* Campo trampa: invisible para personas; los bots lo llenan. */}
+          <div className="absolute -left-[9999px] h-px w-px overflow-hidden" aria-hidden="true">
+            <label>
+              Sitio web
+              <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+            </label>
+          </div>
+
+          <Turnstile onToken={setCaptchaToken} resetKey={captchaKey} />
+          {formError && (
+            <p role="alert" className="text-xs text-red-400 px-1">
+              {formError}
+            </p>
+          )}
 
           <button
             type="submit"

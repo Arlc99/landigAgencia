@@ -45,25 +45,19 @@ export function buildDiagnosisEmail(to: string, nombre: string, d: ClientDiagnos
   const firstName = oneLine(nombre.split(/\s+/)[0] ?? nombre)
   const subject = `${firstName}, tu diagnóstico ${BRAND_NAME} está listo`
 
-  const priorities = d.prioridades
+  const problems = d.problemas
     .map(
       (p, i) => `
-        <tr><td style="padding:0 0 16px 0;">
+        <tr><td style="padding:0 0 12px 0;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e3e8ee;border-radius:14px;">
             <tr>
-              <td width="64" valign="top" style="padding:18px 0 18px 18px;">
-                <div style="width:46px;height:46px;border-radius:12px;background:#eaf9fd;border:1px solid #bfeaf5;text-align:center;font:400 24px/46px Arial,sans-serif;">${ICON_EMOJI[p.icono]}</div>
+              <td width="62" valign="top" style="padding:16px 0 16px 16px;">
+                <div style="width:44px;height:44px;border-radius:12px;background:#fff6e0;border:1px solid #f6dfa3;text-align:center;font:400 22px/44px Arial,sans-serif;">${ICON_EMOJI[p.icono]}</div>
               </td>
-              <td valign="top" style="padding:18px 20px 16px 12px;">
-                <p style="margin:0 0 3px 0;font:700 11px Arial,sans-serif;letter-spacing:1.5px;color:${CYAN_DARK};">NECESIDAD ${i + 1}</p>
-                <p style="margin:0 0 6px 0;font:700 17px/1.3 Arial,sans-serif;color:${INK};">${esc(p.titulo)}</p>
-                <p style="margin:0 0 10px 0;font:400 14px/1.5 Arial,sans-serif;color:${MUTED};">${esc(p.por_que)}</p>
-                ${p.incluye
-                  .map(
-                    (punto) =>
-                      `<p style="margin:0 0 6px 0;padding-left:20px;text-indent:-20px;font:400 14px/1.5 Arial,sans-serif;color:#1f2933;"><span style="color:${CYAN_DARK};font-weight:700;">&#10003;</span>&nbsp;&nbsp;${esc(punto)}</p>`,
-                  )
-                  .join('')}
+              <td valign="top" style="padding:16px 18px 14px 12px;">
+                <p style="margin:0 0 2px 0;font:700 11px Arial,sans-serif;letter-spacing:1.5px;color:#9a6b00;">PROBLEMA ${i + 1}</p>
+                <p style="margin:0 0 8px 0;font:700 16px/1.35 Arial,sans-serif;color:${INK};">${esc(p.problema)}</p>
+                <p style="margin:0;padding:9px 12px;background:#eaf9fd;border-radius:8px;font:400 14px/1.45 Arial,sans-serif;color:#1f2933;"><span style="color:${CYAN_DARK};font-weight:700;">Soluci&oacute;n ${BRAND_NAME}:</span> ${esc(p.solucion)}</p>
               </td>
             </tr>
           </table>
@@ -86,16 +80,17 @@ export function buildDiagnosisEmail(to: string, nombre: string, d: ClientDiagnos
       <p style="margin:4px 0 0 0;font:400 12px Arial,sans-serif;color:#9aa5b1;">Agencia de marketing digital &middot; ${esc(BRAND_CITY)}</p>
     </td></tr>
     <tr><td style="padding:28px 28px 20px 28px;">
+      <p style="margin:0 0 6px 0;font:700 11px Arial,sans-serif;letter-spacing:1.5px;color:${CYAN_DARK};">D&Oacute;NDE EST&Aacute;S HOY</p>
       <p style="margin:0 0 8px 0;font:400 14px Arial,sans-serif;color:${MUTED};">Hola ${esc(firstName)}, este es tu diagn&oacute;stico gratuito:</p>
       <h1 style="margin:0 0 12px 0;font:700 23px/1.25 Arial,sans-serif;color:${INK};">${esc(d.titulo)}</h1>
       <p style="margin:0;font:400 15px/1.6 Arial,sans-serif;color:#1f2933;">${esc(d.resumen)}</p>
     </td></tr>
-    <tr><td style="padding:0 28px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${priorities}</table></td></tr>
+    <tr><td style="padding:0 28px;"><p style="margin:0 0 12px 0;font:700 11px Arial,sans-serif;letter-spacing:1.5px;color:#9a6b00;">LO QUE EST&Aacute; FRENANDO TUS VENTAS</p><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${problems}</table></td></tr>
     <tr><td style="padding:4px 28px 8px 28px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eaf9fd;border-radius:14px;">
         <tr><td style="padding:18px 14px 6px 14px;"><p style="margin:0;text-align:center;font:700 11px Arial,sans-serif;letter-spacing:1.5px;color:${CYAN_DARK};">TU SISTEMA DE VENTAS CON ${BRAND_NAME}</p></td></tr>
         <tr><td style="padding:10px 10px 4px 10px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${route}</tr></table></td></tr>
-        <tr><td style="padding:12px 22px 20px 22px;"><p style="margin:0;text-align:center;font:400 14px/1.55 Arial,sans-serif;color:#1f2933;">${esc(d.siguiente_nivel)}</p></td></tr>
+        <tr><td style="padding:6px 0 14px 0;font-size:1px;line-height:1px;">&nbsp;</td></tr>
       </table>
     </td></tr>
     <tr><td align="center" style="padding:24px 28px 8px 28px;">
@@ -116,9 +111,9 @@ export function buildDiagnosisEmail(to: string, nombre: string, d: ClientDiagnos
     '',
     d.titulo,
     d.resumen,
-    ...d.prioridades.flatMap((p, i) => ['', `NECESIDAD ${i + 1}: ${p.titulo}`, p.por_que, ...p.incluye.map((s) => `  - ${s}`)]),
     '',
-    d.siguiente_nivel,
+    'LO QUE ESTÁ FRENANDO TUS VENTAS',
+    ...d.problemas.flatMap((p, i) => [`${i + 1}. ${p.problema}`, `   Solución ${BRAND_NAME}: ${p.solucion}`]),
     '',
     d.cierre,
     `Agenda tu cita gratis: ${CALENDAR_URL}`,

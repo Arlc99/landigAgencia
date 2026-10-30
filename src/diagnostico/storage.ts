@@ -21,3 +21,11 @@ export function newSubmissionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(16))
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
 }
+
+export function clearSession(...keys: string[]): void {
+  try {
+    for (const key of keys) sessionStorage.removeItem(key)
+  } catch {
+    // Almacenamiento no disponible: no hay nada que limpiar.
+  }
+}

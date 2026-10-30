@@ -112,6 +112,8 @@ const submissionId = z
 export const submitRequestSchema = z.object({
   submissionId,
   answers: surveySchema,
+  /** Pase firmado que el servidor entregó al resolver el captcha en el paso 1. */
+  pase: z.string().max(200).optional(),
   /** Honeypot anti-bots: debe llegar vacío. */
   website: z.string().max(0).optional(),
 })
@@ -122,6 +124,9 @@ export const progressRequestSchema = z.object({
   submissionId,
   /** Cantidad de pasos completados (1 a 5). */
   paso: z.number().int().min(1).max(5),
+  /** Token de Cloudflare Turnstile (solo en el primer guardado) o pase firmado que entregó el servidor. */
+  turnstileToken: z.string().max(4096).optional(),
+  pase: z.string().max(200).optional(),
   answers: z.object({
     contacto: contactSchema,
     consentimiento: z.literal(true),
@@ -147,21 +152,19 @@ export type DiagnosisIcon = (typeof DIAGNOSIS_ICONS)[number]
 
 // Los máximos son holgados a propósito: el prompt pide textos cortos, pero un texto un poco más largo no debe tumbar el envío.
 export const clientDiagnosisSchema = z.object({
-  titulo: z.string().trim().min(5).max(220),
-  resumen: z.string().trim().min(20).max(600),
-  prioridades: z
+  titulo: z.string().trim().min(5).max(200),
+  resumen: z.string().trim().min(10).max(350),
+  problemas: z
     .array(
       z.object({
         icono: z.enum(DIAGNOSIS_ICONS),
-        titulo: z.string().trim().min(3).max(160),
-        por_que: z.string().trim().min(10).max(350),
-        incluye: z.array(z.string().trim().min(5).max(220)).min(2).max(4),
+        problema: z.string().trim().min(5).max(180),
+        solucion: z.string().trim().min(5).max(200),
       }),
     )
     .min(2)
-    .max(3),
-  siguiente_nivel: z.string().trim().min(20).max(450),
-  cierre: z.string().trim().min(10).max(300),
+    .max(4),
+  cierre: z.string().trim().min(10).max(250),
 })
 export type ClientDiagnosis = z.infer<typeof clientDiagnosisSchema>
 

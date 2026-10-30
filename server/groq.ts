@@ -24,18 +24,15 @@ Usa el criterio profesional cuando las señales se mezclen. El lead puede ser un
 - "estrategia_venta": exactamente 3 pasos accionables y ordenados, específicos para las respuestas del lead.
 - "script_contacto": mensaje de WhatsApp de un asesor de JUALU para el lead, tuteo cordial, usa su primer nombre y su empresa solo si la indicó, menciona su objetivo y su principal reto, cierra con una pregunta para agendar. Máximo 600 caracteres, sin precios ni promesas de resultados, sin inventar datos.
 
-B) DIAGNÓSTICO PARA EL CLIENTE ("diagnostico_cliente"): lo que la persona lee en pantalla al terminar. Debe ser BREVE, claro y hacer que quiera trabajar con JUALU. Le explicas QUÉ necesita su negocio y por qué, para que entienda que JUALU se lo resuelve. No le enseñas a hacerlo por su cuenta ni le recomiendas herramientas, plataformas o marcas de terceros (nada de Wix, WordPress, Shopify, Canva, Google Calendar, Trello ni apps similares): lo que necesita lo construye JUALU.
-- "titulo": una frase corta (máximo 14 palabras) que resuma su situación.
-- "resumen": 1 o 2 frases (máximo 220 caracteres) que muestren que entendiste su caso y su principal reto.
-- "prioridades": EXACTAMENTE 2, de la más a la menos importante. Una de las dos debe ser siempre su página web propia (crearla, o mejorarla si ya tiene): explícale que sin una web propia depende de las redes y pierde ventas. La otra la eliges según sus respuestas entre estas necesidades de JUALU: (a) llevar el tráfico de sus redes sociales a su web y a WhatsApp para convertir seguidores en clientes; (b) recibir y organizar a sus clientes por WhatsApp; (c) cobrar en línea y recibir pagos en su web (si vende productos o servicios); (d) un asistente automático (bot) que atienda y responda a sus clientes por WhatsApp o por la web, y la automatización de sus ventas y del seguimiento. La segunda prioridad debe girar en torno a convertir a sus clientes (a, b, c o d), NO a producir contenido para redes; y en los "incluye" de las dos prioridades procura que aparezcan al menos dos de estos beneficios cuando encajen: llevar a sus clientes a WhatsApp, recibir pagos en línea, bot que atiende y vende, ventas y seguimiento automáticos. Cada prioridad tiene:
-  · "icono": uno de web, redes, whatsapp, pagos, bot, ventas, marca, anuncios (el que mejor represente esa prioridad).
-  · "titulo": la necesidad, corta (máximo 8 palabras).
-  · "por_que": 1 frase (máximo 160 caracteres) ligada a SUS respuestas que explique por qué lo necesita.
-  · "incluye": 2 o 3 puntos MUY cortos (máximo 90 caracteres cada uno) con lo que JUALU le construye y el beneficio para ella. Enfócate en el resultado, nunca en un tutorial.
-  Si por sus respuestas se justifica, menciona cómo vender mejor sus productos o servicios (presentarlos mejor, mostrar su catálogo, cobrar en línea).
-- "siguiente_nivel": 1 o 2 frases (máximo 200 caracteres) que unan todo: en JUALU armamos su sistema de ventas completo (web, redes, WhatsApp, pagos, bot y seguimiento automático). Sin precios.
-- "cierre": 1 frase motivadora (máximo 120 caracteres) que invite a agendar una cita gratuita para armar su plan.
-Reglas del diagnóstico: específico para sus respuestas; no inventes cifras, estadísticas ni resultados garantizados; no menciones HOT, WARM, COLD ni clasificaciones; no menciones precios; no critiques su negocio ni a su competencia; no prometas que algo es gratis salvo la cita y el diagnóstico; tono cálido, profesional y cercano, tuteo. En "cierre" habla en plural como equipo ("podemos", "te acompañamos").
+B) DIAGNÓSTICO PARA EL CLIENTE ("diagnostico_cliente"): lo que la persona lee en pantalla al terminar. Es un diagnóstico MÍNIMO: le muestra dónde se encuentra hoy y qué 3 problemas le frenan las ventas. Cada problema trae una solución de una sola línea. El objetivo es que se dé cuenta de que tiene problemas con solución, y que esa solución se la da JUALU. NO le enseñas a resolverlos por su cuenta, no das pasos ni tutoriales, y no recomiendas herramientas, plataformas ni marcas de terceros (nada de Wix, WordPress, Shopify, Canva, Google Calendar, Trello ni apps similares).
+- "titulo": dónde se encuentra hoy el negocio, en una frase (máximo 12 palabras).
+- "resumen": UNA frase (máximo 150 caracteres) que muestre que entendiste su caso.
+- "problemas": EXACTAMENTE 3, del que más le frena las ventas al que menos. Uno de los tres debe ser siempre su página web propia (que no la tiene, o que no le vende): sin web propia depende de las redes. Los otros dos los eliges según sus respuestas entre: (a) sus seguidores o visitas no llegan a la web ni a WhatsApp, (b) atiende a sus clientes a mano y pierde tiempo y ventas, (c) no puede cobrar ni recibir pagos en línea, (d) no tiene un bot ni ventas y seguimiento automáticos. Cada problema tiene:
+  · "icono": uno de web, redes, whatsapp, pagos, bot, ventas, marca, anuncios (el que mejor lo represente).
+  · "problema": lo que le está costando ventas, en palabras simples y ligado a SUS respuestas (máximo 75 caracteres). Nada genérico. Escríbelo en segunda persona con "tú" y con ortografía correcta: "No tienes web propia", "Atiendes a tus clientes a mano", "Vendes solo por Instagram" (NUNCA "atendes", "tenés" ni "vendés").
+  · "solucion": la solución en UNA línea muy corta (máximo 80 caracteres): lo que JUALU hace y el resultado para ella, nunca el cómo. Ejemplo: "Una web propia que muestra tus productos y te lleva clientes a WhatsApp".
+- "cierre": 1 frase corta (máximo 110 caracteres) que diga que estos problemas tienen solución y la dan ellos, e invite a agendar una cita gratuita.
+Reglas del diagnóstico: específico para sus respuestas; no inventes cifras ni resultados garantizados; no menciones HOT, WARM, COLD ni clasificaciones; no menciones precios; no critiques su negocio ni a su competencia; no prometas que algo es gratis salvo la cita y el diagnóstico; tono cálido, profesional y cercano. Tutea con "tú" (tienes, atiendes, vendes), nunca con voseo ("tenés", "atendés"). En "cierre" habla en plural como equipo.
 
 Reglas generales:
 - Lenguaje sencillo, sin tecnicismos de marketing: no digas "lead", "embudo", "conversión", "CRM", "pauta", "engagement", "funnel", "branding", "KPI", "SEO", "responsive" ni "B2B"; di "clientes", "clientes potenciales", "anuncios", "página web", "seguimiento automático".
@@ -61,24 +58,22 @@ const RESPONSE_FORMAT = {
           properties: {
             titulo: { type: 'string' },
             resumen: { type: 'string' },
-            prioridades: {
+            problemas: {
               type: 'array',
               items: {
                 type: 'object',
                 properties: {
                   icono: { type: 'string', enum: ['web', 'redes', 'whatsapp', 'pagos', 'bot', 'ventas', 'marca', 'anuncios'] },
-                  titulo: { type: 'string' },
-                  por_que: { type: 'string' },
-                  incluye: { type: 'array', items: { type: 'string' } },
+                  problema: { type: 'string' },
+                  solucion: { type: 'string' },
                 },
-                required: ['icono', 'titulo', 'por_que', 'incluye'],
+                required: ['icono', 'problema', 'solucion'],
                 additionalProperties: false,
               },
             },
-            siguiente_nivel: { type: 'string' },
             cierre: { type: 'string' },
           },
-          required: ['titulo', 'resumen', 'prioridades', 'siguiente_nivel', 'cierre'],
+          required: ['titulo', 'resumen', 'problemas', 'cierre'],
           additionalProperties: false,
         },
       },
@@ -134,7 +129,7 @@ async function callGroq(apiKey: string, model: string, leadData: string): Promis
       body: JSON.stringify({
         model,
         temperature: 0.5,
-        max_completion_tokens: 3000,
+        max_completion_tokens: 2500,
         reasoning_effort: 'low',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },

@@ -27,6 +27,7 @@ import {
   type UrgencyId,
 } from '../../shared/survey';
 import type { StepErrors, SurveyDispatch } from './useSurvey';
+import { Turnstile } from '../components/Turnstile';
 import { ChoiceCard, FieldError, TextField } from './ui';
 
 /* ---------- Paso 1: contacto ---------- */
@@ -37,9 +38,17 @@ export function ContactStep({
   errors,
   showAllErrors,
   dispatch,
+  showCaptcha,
+  onCaptchaToken,
+  captchaKey,
+  captchaError,
 }: {
   contacto: ContactInfo;
   consentimiento: boolean;
+  showCaptcha: boolean;
+  onCaptchaToken: (token: string) => void;
+  captchaKey: number;
+  captchaError?: string;
   errors: StepErrors;
   showAllErrors: boolean;
   dispatch: SurveyDispatch;
@@ -119,6 +128,12 @@ export function ContactStep({
         </label>
         <FieldError message={showAllErrors ? errors.consentimiento : undefined} />
       </div>
+      {showCaptcha && (
+        <div className="sm:col-span-2">
+          <Turnstile onToken={onCaptchaToken} resetKey={captchaKey} />
+          <FieldError message={captchaError} />
+        </div>
+      )}
     </div>
   );
 }
