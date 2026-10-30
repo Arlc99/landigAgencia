@@ -1,15 +1,16 @@
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useCallback } from 'react';
+import { gradientStyle } from '../components/primitives';
+import { saveProgress } from '../diagnostico/api';
 import { AnalyzingScreen, ResultScreen } from '../diagnostico/Screens';
 import { SurveyWizard } from '../diagnostico/SurveyWizard';
 import { useSubmission } from '../diagnostico/useSubmission';
 import { useSurvey } from '../diagnostico/useSurvey';
-import { gradientStyle } from '../components/primitives';
 
 export default function Diagnostico() {
   const survey = useSurvey();
   const submission = useSubmission(survey.submissionId);
-  const { reset: resetSurvey } = survey;
+  const { reset: resetSurvey, submissionId } = survey;
   const { reset: resetSubmission } = submission;
 
   const restart = useCallback(() => {
@@ -17,8 +18,18 @@ export default function Diagnostico() {
     resetSurvey();
   }, [resetSubmission, resetSurvey]);
 
+  const handleProgress = useCallback(
+    (paso: number, draft: Parameters<typeof saveProgress>[2], honeypot: string) =>
+      saveProgress(submissionId, paso, draft, honeypot),
+    [submissionId],
+  );
+
   const view =
-    submission.phase === 'idle' ? 'survey' : submission.phase === 'done' && submission.answers ? 'result' : 'progress';
+    submission.phase === 'idle'
+      ? 'survey'
+      : submission.phase === 'done' && submission.answers && submission.diagnostico
+        ? 'result'
+        : 'progress';
 
   return (
     <MotionConfig reducedMotion="user">
@@ -41,7 +52,8 @@ export default function Diagnostico() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mx-auto mt-6 max-w-md text-base leading-[1.5] text-white/60"
           >
-            Responde 5 pasos cortos (menos de 3 minutos) y un asesor de JUALU te contactará con una propuesta a tu medida.
+            Responde 5 pasos cortos (menos de 3 minutos) y recibe al instante tu diagnóstico personalizado con los
+            primeros pasos para crecer.
           </motion.p>
         </div>
 
@@ -49,7 +61,7 @@ export default function Diagnostico() {
           id="diagnostico"
           aria-label="Diagnóstico gratuito"
           className="liquid-glass relative mt-10 scroll-mt-24 rounded-3xl p-5 sm:p-8"
-          style={{ background: "rgba(8,8,8,0.62)", backdropFilter: "blur(14px)" }}
+          style={{ background: 'rgba(8,8,8,0.62)', backdropFilter: 'blur(14px)' }}
         >
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
@@ -59,7 +71,9 @@ export default function Diagnostico() {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.25 }}
             >
-              {view === 'survey' && <SurveyWizard survey={survey} onSubmit={submission.submit} />}
+              {view === 'survey' && (
+                <SurveyWizard survey={survey} onSubmit={submission.submit} onProgress={handleProgress} />
+              )}
               {view === 'progress' && (
                 <AnalyzingScreen
                   phase={submission.phase}
@@ -68,8 +82,12 @@ export default function Diagnostico() {
                   onEdit={resetSubmission}
                 />
               )}
-              {view === 'result' && submission.answers && (
-                <ResultScreen answers={submission.answers} onRestart={restart} />
+              {view === 'result' && submission.answers && submission.diagnostico && (
+                <ResultScreen
+                  answers={submission.answers}
+                  diagnostico={submission.diagnostico}
+                  onRestart={restart}
+                />
               )}
             </motion.div>
           </AnimatePresence>

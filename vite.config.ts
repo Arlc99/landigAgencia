@@ -4,29 +4,38 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 
 type Handler = (request: Request, env: Record<string, string | undefined>) => Promise<Response>;
 
+/** Ruta de desarrollo → [módulo, función exportada]. Es la misma lógica que corre en Vercel. */
+const ROUTES: Record<string, [string, string]> = {
+  '/api/submit': ['/server/handlers.ts', 'handleSubmit'],
+  '/api/progreso': ['/server/handlers.ts', 'handleProgress'],
+  '/api/contacto': ['/server/contact.ts', 'handleContact'],
+};
+
 /**
- * Sirve /api/submit en desarrollo con la misma lógica que corre en Vercel (server/handlers.ts).
+ * Sirve las rutas /api en desarrollo con la misma lógica que se despliega en Vercel.
  * Las claves solo viven en el servidor: nunca se exponen al navegador.
  */
 function devApi(env: Record<string, string>): Plugin {
   return {
     name: 'dev-api',
     configureServer(server: ViteDevServer) {
-      for (const [route, name] of [['/api/submit', 'handleSubmit'], ['/api/contacto', 'handleContact']] as const) {
+      for (const route of Object.keys(ROUTES)) {
         server.middlewares.use(route, (req, res, next) => {
-          void handle(server, env, req, res, route, name).catch(next);
+          void handle(server, env, req, res, route).catch(next);
         });
       }
     },
   };
 }
 
-async function handle(server: ViteDevServer, env: Record<string, string>, req: IncomingMessage,
+async function handle(
+  server: ViteDevServer,
+  env: Record<string, string>,
+  req: IncomingMessage,
   res: ServerResponse,
   route: string,
-  name: string,
 ) {
-  const file = name === 'handleSubmit' ? '/server/handlers.ts' : '/server/contact.ts';
+  const [file, name] = ROUTES[route]!;
   const mod = (await server.ssrLoadModule(file)) as Record<string, Handler>;
 
   const chunks: Buffer[] = [];

@@ -1,19 +1,28 @@
-import { Bot, CalendarCheck, CircleCheckBig, PenLine, RotateCcw, TriangleAlert } from 'lucide-react';
+import {
+  Bot,
+  CalendarCheck,
+  CircleCheck,
+  PenLine,
+  RotateCcw,
+  Rocket,
+  TriangleAlert,
+} from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import type { SurveyAnswers } from '../../shared/schema';
-import { CALENDAR_URL } from './brand';
+import type { ClientDiagnosis, SurveyAnswers } from '../../shared/schema';
+import { LogoMark } from '../components/primitives';
+import { CALENDAR_URL } from '../../shared/brand';
 import type { SubmissionPhase } from './useSubmission';
 import { Button, LinkButton } from './ui';
 
 const HINTS = [
   'Revisando tus respuestas…',
   'Entendiendo qué necesita tu negocio…',
-  'Preparando tu diagnóstico para nuestro equipo…',
-  'Guardando tu información de forma segura…',
+  'Armando tus recomendaciones personalizadas…',
+  'Preparando tu diagnóstico JUALU…',
 ];
 
-/** Pantalla mientras se envía el diagnóstico, o de error con reintento. No muestra resultados del análisis. */
+/** Pantalla mientras se prepara el diagnóstico, o de error con reintento. */
 export function AnalyzingScreen({
   phase,
   error,
@@ -38,7 +47,7 @@ export function AnalyzingScreen({
       )}
 
       <h2 className="mt-8 text-2xl font-semibold tracking-tight">
-        {isError ? 'No pudimos completar el envío' : 'Enviando tu diagnóstico'}
+        {isError ? 'No pudimos preparar tu diagnóstico' : 'Preparando tu diagnóstico'}
       </h2>
 
       {isError ? (
@@ -46,7 +55,10 @@ export function AnalyzingScreen({
           {error}
         </p>
       ) : (
-        <RotatingHint />
+        <>
+          <RotatingHint />
+          <p className="mt-2 text-xs text-white/35">Puede tardar unos segundos.</p>
+        </>
       )}
 
       {isError && (
@@ -117,49 +129,124 @@ function RotatingHint() {
 }
 
 /**
- * Pantalla final para el cliente: solo agradece y confirma el contacto.
- * El análisis de IA es interno y nunca se muestra aquí (está en Google Sheets).
+ * Diagnóstico personalizado para el cliente. Todo se muestra como texto plano (nunca HTML).
+ * La clasificación y la estrategia de venta son internas y no llegan aquí.
  */
-export function ResultScreen({ answers, onRestart }: { answers: SurveyAnswers; onRestart: () => void }) {
+export function ResultScreen({
+  answers,
+  diagnostico,
+  onRestart,
+}: {
+  answers: SurveyAnswers;
+  diagnostico: ClientDiagnosis;
+  onRestart: () => void;
+}) {
   const firstName = answers.contacto.nombre.split(/\s+/)[0] ?? answers.contacto.nombre;
+  const today = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 
   return (
-    <div className="flex flex-col items-center py-4 text-center">
-      <motion.div
-        initial={{ scale: 0.4, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: 'spring', stiffness: 220, damping: 16 }}
-        className="liquid-glass flex h-20 w-20 items-center justify-center rounded-full"
-      >
-        <CircleCheckBig className="h-10 w-10 text-cyan-300" aria-hidden />
+    <article className="text-left" aria-labelledby="diagnostico-titulo">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+        <div className="flex items-center gap-2.5">
+          <LogoMark className="h-7 w-7" />
+          <div className="leading-tight">
+            <p className="text-sm font-semibold tracking-wide">JUALU</p>
+            <p className="text-[11px] text-white/45">Diagnóstico gratuito</p>
+          </div>
+        </div>
+        <p className="text-xs text-white/45">
+          Preparado para {firstName} · {today}
+        </p>
+      </header>
+
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+        <h2 id="diagnostico-titulo" className="mt-6 text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+          {diagnostico.titulo}
+        </h2>
+        <p className="mt-3 text-[15px] leading-relaxed text-white/65">{diagnostico.resumen}</p>
       </motion.div>
 
-      <h2 className="mt-6 text-2xl font-semibold tracking-tight sm:text-3xl">¡Gracias por responder, {firstName}!</h2>
-      <p className="mt-3 max-w-md text-[15px] leading-relaxed text-white/60">
-        Recibimos tu diagnóstico. Un asesor de JUALU revisará tu caso y se pondrá en contacto contigo muy pronto.
-      </p>
-      <p className="mt-2 max-w-md text-[15px] leading-relaxed text-white/60">
-        Si prefieres avanzar más rápido, puedes agendar una cita ahora mismo.
-      </p>
+      <section className="mt-8" aria-label="Tus prioridades">
+        <p className="text-xs font-medium uppercase tracking-widest text-cyan-300/80">Por dónde empezar</p>
+        <ol className="mt-4 space-y-4">
+          {diagnostico.prioridades.map((item, index) => (
+            <motion.li
+              key={index}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, delay: 0.15 + index * 0.1 }}
+              className="liquid-glass rounded-2xl p-5"
+            >
+              <div className="flex items-start gap-3.5">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-400/10 text-sm font-semibold text-cyan-200">
+                  {index + 1}
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-[16px] font-semibold leading-snug">{item.titulo}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-white/55">{item.por_que}</p>
+                  <ul className="mt-3 space-y-2">
+                    {item.pasos.map((paso, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-white/80">
+                        <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
+                        <span>{paso}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </motion.li>
+          ))}
+        </ol>
+      </section>
 
-      <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
+      <motion.section
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.6 }}
+        className="relative mt-6 overflow-hidden rounded-2xl border border-cyan-300/30 p-5"
+        style={{ background: 'linear-gradient(135deg, rgba(0,210,255,0.12), rgba(11,37,81,0.35))' }}
+        aria-label="Siguiente nivel"
+      >
+        <div className="flex items-start gap-3.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-200">
+            <Rocket className="h-5 w-5" aria-hidden />
+          </span>
+          <div>
+            <h3 className="text-[16px] font-semibold">Lo que haríamos juntos</h3>
+            <p className="mt-1.5 text-sm leading-relaxed text-white/75">{diagnostico.siguiente_nivel}</p>
+          </div>
+        </div>
+      </motion.section>
+
+      <p className="mt-6 text-center text-[15px] leading-relaxed text-white/70">{diagnostico.cierre}</p>
+
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <LinkButton
           href={CALENDAR_URL}
           target="_blank"
           rel="noopener noreferrer"
           icon={<CalendarCheck className="h-4 w-4" aria-hidden />}
-          className="flex-1"
+          className="sm:min-w-52"
         >
-          Agendar cita
+          Agendar mi cita gratis
         </LinkButton>
-        <LinkButton variant="secondary" href="/" className="flex-1">
+        <LinkButton variant="secondary" href="/">
           Volver al inicio
         </LinkButton>
       </div>
 
-      <Button variant="ghost" onClick={onRestart} icon={<RotateCcw className="h-4 w-4" aria-hidden />} className="mt-6">
-        Responder otro diagnóstico
-      </Button>
-    </div>
+      <div className="mt-4 flex flex-col items-center gap-1 text-center">
+        <p className="text-xs text-white/40">
+          Un asesor de JUALU también se pondrá en contacto contigo para acompañarte con este plan.
+        </p>
+        <Button variant="ghost" onClick={onRestart} icon={<RotateCcw className="h-4 w-4" aria-hidden />}>
+          Hacer otro diagnóstico
+        </Button>
+      </div>
+
+      <p className="mt-2 border-t border-white/10 pt-4 text-center text-[11px] text-white/30">
+        Preparado por el equipo JUALU · Cali, Colombia
+      </p>
+    </article>
   );
 }

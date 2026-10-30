@@ -1,4 +1,5 @@
 import type { SubmitResponse, SurveyAnswers } from '../../shared/schema'
+import type { SurveyDraft } from './useSurvey'
 
 export class ApiClientError extends Error {
   readonly status: number
@@ -36,4 +37,23 @@ export async function submitSurvey(submissionId: string, answers: SurveyAnswers,
     throw new ApiClientError(message, response.status)
   }
   return data as SubmitResponse
+}
+
+/**
+ * Guarda el avance al pasar cada paso. Es "disparar y olvidar": si falla no interrumpe a la persona
+ * (el envío final guarda todo de nuevo). `keepalive` permite que termine aunque cierre la pestaña.
+ */
+export function saveProgress(submissionId: string, paso: number, draft: SurveyDraft, honeypot = ''): void {
+  const { contacto, consentimiento, objetivo, diagnostico, presupuesto, urgencia } = draft
+  void fetch('/api/progreso', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    keepalive: true,
+    body: JSON.stringify({
+      submissionId,
+      paso,
+      answers: { contacto, consentimiento, objetivo, diagnostico, presupuesto, urgencia },
+      website: honeypot || undefined,
+    }),
+  }).catch(() => {})
 }

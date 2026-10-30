@@ -5,11 +5,13 @@ import type { FormEvent } from 'react';
 import type { SurveyAnswers } from '../../shared/schema';
 import { BudgetStep, ContactStep, DiagnosisStep, ObjectiveStep, UrgencyStep } from './Steps';
 import { Button } from './ui';
-import { finalizeDraft, LAST_STEP, STEPS, type useSurvey } from './useSurvey';
+import { finalizeDraft, LAST_STEP, STEPS, type SurveyDraft, type useSurvey } from './useSurvey';
 
 interface Props {
   survey: ReturnType<typeof useSurvey>;
   onSubmit: (answers: SurveyAnswers, honeypot: string) => void;
+  /** Se llama al completar cada paso para guardar el avance. */
+  onProgress: (paso: number, draft: SurveyDraft, honeypot: string) => void;
 }
 
 const variants = {
@@ -87,7 +89,7 @@ function ProgressSteps({
   );
 }
 
-export function SurveyWizard({ survey, onSubmit }: Props) {
+export function SurveyWizard({ survey, onSubmit, onProgress }: Props) {
   const { step, maxStep, direction, draft, errors, dispatch, goTo } = survey;
   const [attempted, setAttempted] = useState<Record<number, boolean>>({});
   const [honeypot, setHoneypot] = useState('');
@@ -117,6 +119,7 @@ export function SurveyWizard({ survey, onSubmit }: Props) {
       return;
     }
     if (step < LAST_STEP) {
+      onProgress(step + 1, draft, honeypot);
       goTo(step + 1);
       return;
     }
@@ -164,7 +167,7 @@ export function SurveyWizard({ survey, onSubmit }: Props) {
             </header>
 
             {step === 0 && (
-              <ContactStep contacto={draft.contacto} errors={errors} showAllErrors={showAllErrors} dispatch={dispatch} />
+              <ContactStep contacto={draft.contacto} consentimiento={draft.consentimiento} errors={errors} showAllErrors={showAllErrors} dispatch={dispatch} />
             )}
             {step === 1 && (
               <ObjectiveStep value={draft.objetivo} error={showAllErrors ? errors.objetivo : undefined} dispatch={dispatch} />
@@ -206,12 +209,12 @@ export function SurveyWizard({ survey, onSubmit }: Props) {
           }
           className="flex-1 sm:flex-none sm:px-8"
         >
-          {step === LAST_STEP ? 'Enviar diagnóstico' : 'Continuar'}
+          {step === LAST_STEP ? 'Ver mi diagnóstico' : 'Continuar'}
         </Button>
       </div>
       <p className="mt-4 text-center text-xs text-white/40">
         <Lock className="mr-1 inline h-3 w-3 align-[-1px]" aria-hidden />
-        Tus datos se usan solo para preparar tu diagnóstico.
+        Tus datos se usan solo para preparar tu diagnóstico y contactarte.
       </p>
     </form>
   );

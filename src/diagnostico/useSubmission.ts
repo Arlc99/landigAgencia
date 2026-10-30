@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { SurveyAnswers } from '../../shared/schema'
+import type { ClientDiagnosis, SurveyAnswers } from '../../shared/schema'
 import { ApiClientError, submitSurvey } from './api'
 import { loadSession, saveSession } from './storage'
 
@@ -9,12 +9,13 @@ export interface SubmissionState {
   phase: SubmissionPhase
   error: string | null
   answers: SurveyAnswers | null
+  diagnostico: ClientDiagnosis | null
 }
 
-const STORAGE_KEY = 'jualu-diagnostico-submission:v2'
+const STORAGE_KEY = 'jualu-diagnostico-submission:v3'
 const MIN_SENDING_MS = 2200
 
-const IDLE: SubmissionState = { phase: 'idle', error: null, answers: null }
+const IDLE: SubmissionState = { phase: 'idle', error: null, answers: null, diagnostico: null }
 
 function restore(): SubmissionState {
   const saved = loadSession<SubmissionState>(STORAGE_KEY)
@@ -39,17 +40,17 @@ export function useSubmission(submissionId: string) {
       // Evita envíos duplicados por doble clic o reintentos concurrentes.
       if (inFlight.current) return
       inFlight.current = true
-      setState({ phase: 'sending', error: null, answers })
+      setState({ phase: 'sending', error: null, answers, diagnostico: null })
       try {
         // La animación dura un mínimo también cuando hay error, para no mostrar un parpadeo.
         const pending = submitSurvey(submissionId, answers, honeypot)
         await Promise.allSettled([pending, wait(MIN_SENDING_MS)])
-        await pending
-        setState({ phase: 'done', error: null, answers })
+        const response = await pending
+        setState({ phase: 'done', error: null, answers, diagnostico: response.diagnostico })
       } catch (error) {
         const message =
           error instanceof ApiClientError ? error.message : 'Ocurrió un error inesperado. Inténtalo de nuevo.'
-        setState({ phase: 'error', error: message, answers })
+        setState({ phase: 'error', error: message, answers, diagnostico: null })
       } finally {
         inFlight.current = false
       }

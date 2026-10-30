@@ -1,5 +1,6 @@
 import {
   Building,
+  Check,
   CalendarClock,
   Globe,
   Hourglass,
@@ -32,11 +33,13 @@ import { ChoiceCard, FieldError, TextField } from './ui';
 
 export function ContactStep({
   contacto,
+  consentimiento,
   errors,
   showAllErrors,
   dispatch,
 }: {
   contacto: ContactInfo;
+  consentimiento: boolean;
   errors: StepErrors;
   showAllErrors: boolean;
   dispatch: SurveyDispatch;
@@ -91,6 +94,31 @@ export function ContactStep({
         className="sm:col-span-2"
         maxLength={120}
       />
+      <div className="sm:col-span-2">
+        <label className="group flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={consentimiento}
+            onChange={(e) => dispatch({ type: 'consent', value: e.target.checked })}
+            aria-invalid={showAllErrors && errors.consentimiento ? true : undefined}
+            className="peer sr-only"
+          />
+          <span
+            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition peer-focus-visible:ring-2 peer-focus-visible:ring-cyan-400 ${
+              consentimiento ? 'border-cyan-300 bg-cyan-300 text-black' : 'border-white/25 group-hover:border-white/50'
+            }`}
+            aria-hidden
+          >
+            {consentimiento && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+          </span>
+          <span className="text-xs leading-relaxed text-white/60">
+            Autorizo a JUALU a tratar mis datos personales para preparar mi diagnóstico y a contactarme por WhatsApp y
+            correo con información sobre mi caso, conforme a la Ley 1581 de 2012. Puedo pedir que borren mis datos en
+            cualquier momento.
+          </span>
+        </label>
+        <FieldError message={showAllErrors ? errors.consentimiento : undefined} />
+      </div>
     </div>
   );
 }

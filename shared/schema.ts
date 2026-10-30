@@ -7,7 +7,9 @@ import {
   URGENCY_LEVELS,
   getObjective,
   optionLabel,
+  type BudgetId,
   type ObjectiveId,
+  type UrgencyId,
 } from './survey.js'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i
@@ -89,6 +91,7 @@ export function validateDiagnosis(
 export const surveySchema = z
   .object({
     contacto: contactSchema,
+    consentimiento: z.literal(true, { error: 'Debes aceptar el tratamiento de tus datos para continuar.' }),
     objetivo: z.enum(OBJECTIVE_IDS, { error: 'Selecciona un objetivo.' }),
     diagnostico: z.record(z.string().max(40), z.union([z.string().max(600), z.array(z.string().max(60)).max(10)])),
     presupuesto: z.enum(BUDGET_IDS, { error: 'Selecciona un rango de inversión.' }),
@@ -114,25 +117,77 @@ export const submitRequestSchema = z.object({
 })
 export type SubmitRequest = z.infer<typeof submitRequestSchema>
 
+/** Avance parcial: se guarda al pasar cada paso, para saber quién se interesó aunque no termine. */
+export const progressRequestSchema = z.object({
+  submissionId,
+  /** Cantidad de pasos completados (1 a 5). */
+  paso: z.number().int().min(1).max(5),
+  answers: z.object({
+    contacto: contactSchema,
+    consentimiento: z.literal(true),
+    objetivo: z.enum(OBJECTIVE_IDS).nullish(),
+    diagnostico: z
+      .record(z.string().max(40), z.union([z.string().max(600), z.array(z.string().max(60)).max(10)]))
+      .optional(),
+    presupuesto: z.enum(BUDGET_IDS).nullish(),
+    urgencia: z.enum(URGENCY_IDS).nullish(),
+  }),
+  /** Honeypot anti-bots: debe llegar vacío. */
+  website: z.string().max(0).optional(),
+})
+export type ProgressRequest = z.infer<typeof progressRequestSchema>
+
+/**
+ * Diagnóstico que ve el cliente: da valor real (pasos concretos) y deja el trabajo
+ * de fondo —ejecución, anuncios, automatización— para el equipo de JUALU.
+ */
+export const clientDiagnosisSchema = z.object({
+  titulo: z.string().trim().min(5).max(220),
+  resumen: z.string().trim().min(40).max(1300),
+  prioridades: z
+    .array(
+      z.object({
+        titulo: z.string().trim().min(3).max(200),
+        por_que: z.string().trim().min(10).max(650),
+        pasos: z.array(z.string().trim().min(5).max(450)).min(2).max(6),
+      }),
+    )
+    .min(3)
+    .max(5),
+  siguiente_nivel: z.string().trim().min(30).max(950),
+  cierre: z.string().trim().min(20).max(500),
+})
+export type ClientDiagnosis = z.infer<typeof clientDiagnosisSchema>
+
 export interface ApiError {
   error: { code: string; message: string }
 }
-/** El análisis de IA nunca viaja al navegador: solo se guarda en la hoja para el equipo comercial. */
+/** El cliente recibe solo su diagnóstico; la clasificación y la estrategia de venta son internas. */
 export interface SubmitResponse {
   ok: true
-  duplicate: boolean
+  diagnostico: ClientDiagnosis
 }
 
 /** Texto que reemplaza a la empresa cuando el lead es una persona natural. */
 export const NO_COMPANY = 'Sin empresa (persona natural)'
 
+/** Respuestas completas o parciales (el avance se guarda paso a paso). */
+export interface AnswersLike {
+  contacto: ContactInfo
+  objetivo?: ObjectiveId | null
+  diagnostico?: DiagnosisAnswers
+  presupuesto?: BudgetId | null
+  urgencia?: UrgencyId | null
+}
+
 /** Respuestas en lenguaje natural (etiquetas, no ids) para la IA y la hoja de cálculo. */
-export function describeAnswers(answers: SurveyAnswers) {
+export function describeAnswers(answers: AnswersLike) {
   const objective = getObjective(answers.objetivo)
+  const given = answers.diagnostico ?? {}
   const diagnostico = (objective?.questions ?? [])
-    .filter((q) => answers.diagnostico[q.id] !== undefined && answers.diagnostico[q.id] !== '')
+    .filter((q) => given[q.id] !== undefined && given[q.id] !== '')
     .map((q) => {
-      const value = answers.diagnostico[q.id]
+      const value = given[q.id]
       const text = Array.isArray(value)
         ? value.map((id) => optionLabel(q.options, id)).join(', ')
         : q.kind === 'text'
@@ -147,9 +202,9 @@ export function describeAnswers(answers: SurveyAnswers) {
       empresa: answers.contacto.empresa || NO_COMPANY,
       whatsapp: normalizePhone(answers.contacto.whatsapp),
     },
-    objetivo: objective?.label ?? answers.objetivo,
+    objetivo: objective?.label ?? '',
     diagnostico,
-    presupuesto_mensual: `${optionLabel(BUDGET_RANGES, answers.presupuesto)} COP`,
-    urgencia: optionLabel(URGENCY_LEVELS, answers.urgencia),
+    presupuesto_mensual: answers.presupuesto ? `${optionLabel(BUDGET_RANGES, answers.presupuesto)} COP` : '',
+    urgencia: answers.urgencia ? optionLabel(URGENCY_LEVELS, answers.urgencia) : '',
   }
 }

@@ -22,6 +22,7 @@ export const LAST_STEP = STEPS.length - 1
 
 export interface SurveyDraft {
   contacto: ContactInfo
+  consentimiento: boolean
   objetivo: ObjectiveId | null
   diagnostico: DiagnosisAnswers
   presupuesto: BudgetId | null
@@ -38,6 +39,7 @@ interface SurveyState {
 
 type Action =
   | { type: 'contact'; field: keyof ContactInfo; value: string }
+  | { type: 'consent'; value: boolean }
   | { type: 'objective'; value: ObjectiveId }
   | { type: 'diagnosis'; id: string; value: string | string[] | undefined }
   | { type: 'budget'; value: BudgetId }
@@ -45,7 +47,7 @@ type Action =
   | { type: 'goto'; step: number }
   | { type: 'reset' }
 
-const STORAGE_KEY = 'jualu-diagnostico-survey:v1'
+const STORAGE_KEY = 'jualu-diagnostico-survey:v2'
 
 function initialState(): SurveyState {
   return {
@@ -55,6 +57,7 @@ function initialState(): SurveyState {
     submissionId: newSubmissionId(),
     draft: {
       contacto: { nombre: '', empresa: '', correo: '', whatsapp: '' },
+      consentimiento: false,
       objetivo: null,
       diagnostico: {},
       presupuesto: null,
@@ -68,6 +71,8 @@ function reducer(state: SurveyState, action: Action): SurveyState {
   switch (action.type) {
     case 'contact':
       return { ...state, draft: { ...draft, contacto: { ...draft.contacto, [action.field]: action.value } } }
+    case 'consent':
+      return { ...state, draft: { ...draft, consentimiento: action.value } }
     case 'objective':
       // Cambiar de objetivo invalida el diagnóstico condicional anterior.
       if (draft.objetivo === action.value) return state
@@ -99,12 +104,14 @@ export function validateStep(step: number, draft: SurveyDraft): StepErrors {
   switch (step) {
     case 0: {
       const result = contactSchema.safeParse(draft.contacto)
-      if (result.success) return {}
       const errors: StepErrors = {}
-      for (const issue of result.error.issues) {
-        const key = String(issue.path[0])
-        errors[key] ??= issue.message
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          const key = String(issue.path[0])
+          errors[key] ??= issue.message
+        }
       }
+      if (!draft.consentimiento) errors.consentimiento = 'Debes aceptar el tratamiento de tus datos para continuar.'
       return errors
     }
     case 1:
