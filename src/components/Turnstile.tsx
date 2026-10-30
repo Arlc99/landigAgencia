@@ -27,7 +27,7 @@ declare global {
 // (el servidor sí exige el captcha). En desarrollo queda apagado salvo que se defina VITE_TURNSTILE_SITE_KEY.
 const PRODUCTION_SITE_KEY = '0x4AAAAAAFsETZUkgCwVh6bL';
 export const TURNSTILE_SITE_KEY: string = (
-  import.meta.env.VITE_TURNSTILE_SITE_KEY ?? (import.meta.env.PROD ? PRODUCTION_SITE_KEY : '')
+  (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined)?.trim() || (import.meta.env.PROD ? PRODUCTION_SITE_KEY : '')
 ).trim();
 export const captchaConfigured = TURNSTILE_SITE_KEY.length > 0;
 
