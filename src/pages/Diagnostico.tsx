@@ -1,14 +1,29 @@
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { gradientStyle } from '../components/primitives';
 import { saveProgress, startSurvey } from '../diagnostico/api';
 import { AnalyzingScreen, ResultScreen } from '../diagnostico/Screens';
-import { clearSession } from '../diagnostico/storage';
+import { clearSession, loadSession } from '../diagnostico/storage';
 import { SurveyWizard } from '../diagnostico/SurveyWizard';
 import { SUBMISSION_STORAGE_KEY, useSubmission } from '../diagnostico/useSubmission';
 import { SURVEY_STORAGE_KEY, useSurvey } from '../diagnostico/useSurvey';
 
+/**
+ * Si se llega a la página desde otro lugar (no recargándola) y quedó un diagnóstico ya entregado guardado,
+ * se descarta: la persona debe ver el formulario limpio. Recargar (F5) en la pantalla del resultado sí lo conserva.
+ */
+function discardDeliveredDiagnosis(): null {
+  const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+  if (nav?.type === 'reload') return null;
+  if (loadSession<{ phase?: string }>(SUBMISSION_STORAGE_KEY)?.phase === 'done') {
+    clearSession(SURVEY_STORAGE_KEY, SUBMISSION_STORAGE_KEY);
+  }
+  return null;
+}
+
 export default function Diagnostico() {
+  // Debe correr antes de leer el estado guardado (los hooks de abajo lo leen en su primer render).
+  useState(discardDeliveredDiagnosis);
   const survey = useSurvey();
   const submission = useSubmission(survey.submissionId, survey.pase);
   const { reset: resetSurvey, submissionId, pase, dispatch } = survey;

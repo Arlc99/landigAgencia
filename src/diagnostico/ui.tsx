@@ -1,6 +1,7 @@
 import { Check, Loader2, TriangleAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useId } from 'react';
+import { Link } from 'react-router-dom';
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from 'react';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -54,8 +55,19 @@ export function LinkButton({
   className = '',
   ...props
 }: CommonProps & AnchorHTMLAttributes<HTMLAnchorElement>) {
+  const classes = `${base} ${variants[variant]} ${className}`;
+  // Los enlaces internos cambian de página SIN recargar: así la pantalla del diagnóstico se desmonta y se limpia.
+  if (props.href?.startsWith('/')) {
+    return (
+      <Link to={props.href} className={classes}>
+        {icon}
+        {children}
+        {iconRight}
+      </Link>
+    );
+  }
   return (
-    <a {...props} className={`${base} ${variants[variant]} ${className}`}>
+    <a {...props} className={classes}>
       {icon}
       {children}
       {iconRight}
