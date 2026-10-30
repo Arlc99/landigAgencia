@@ -1,17 +1,10 @@
-import {
-  Bot,
-  CalendarCheck,
-  CircleCheck,
-  PenLine,
-  RotateCcw,
-  Rocket,
-  TriangleAlert,
-} from 'lucide-react';
+import { Bot, CalendarCheck, CircleCheck, ChevronRight, PenLine, RotateCcw, TriangleAlert } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { CALENDAR_URL } from '../../shared/brand';
 import type { ClientDiagnosis, SurveyAnswers } from '../../shared/schema';
 import { LogoMark } from '../components/primitives';
-import { CALENDAR_URL } from '../../shared/brand';
+import { PRIORITY_ICONS, SALES_ROUTE } from './icons';
 import type { SubmissionPhase } from './useSubmission';
 import { Button, LinkButton } from './ui';
 
@@ -129,7 +122,47 @@ function RotatingHint() {
 }
 
 /**
- * Diagnóstico personalizado para el cliente. Todo se muestra como texto plano (nunca HTML).
+ * Ruta de ventas JUALU: web → redes → WhatsApp → pago en línea → bot. Se iluminan las paradas
+ * que el diagnóstico recomienda; las demás quedan tenues para mostrar el sistema completo.
+ */
+function SalesRoute({ active }: { active: Set<string> }) {
+  return (
+    <ol className="flex items-start justify-between gap-1" aria-label="Tu sistema de ventas con JUALU">
+      {SALES_ROUTE.map((stop, index) => {
+        const on = active.has(stop.id);
+        const Icon = stop.icon;
+        return (
+          <li key={stop.id} className="relative flex flex-1 flex-col items-center text-center">
+            {index > 0 && (
+              <span
+                aria-hidden
+                className={`absolute right-1/2 top-[22px] h-px w-full ${on || active.has(SALES_ROUTE[index - 1]!.id) ? 'bg-cyan-300/50' : 'bg-white/10'}`}
+              />
+            )}
+            <motion.span
+              initial={{ opacity: 0, scale: 0.7 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.2 + index * 0.1, type: 'spring', stiffness: 220, damping: 16 }}
+              className={`relative z-10 flex h-11 w-11 items-center justify-center rounded-full border ${
+                on
+                  ? 'border-cyan-300/60 bg-cyan-400/15 text-cyan-200 shadow-[0_0_24px_-4px_rgba(0,210,255,0.6)]'
+                  : 'border-white/10 bg-[#0c0c0c] text-white/30'
+              }`}
+            >
+              <Icon className="h-5 w-5" aria-hidden />
+            </motion.span>
+            <span className={`mt-2 text-[11px] leading-tight sm:text-xs ${on ? 'font-medium text-white' : 'text-white/35'}`}>
+              {stop.label}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/**
+ * Diagnóstico breve para el cliente. Todo se muestra como texto plano (nunca HTML).
  * La clasificación y la estrategia de venta son internas y no llegan aquí.
  */
 export function ResultScreen({
@@ -142,11 +175,20 @@ export function ResultScreen({
   onRestart: () => void;
 }) {
   const firstName = answers.contacto.nombre.split(/\s+/)[0] ?? answers.contacto.nombre;
-  const today = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
+  const icons = new Set(diagnostico.prioridades.map((p) => p.icono));
+  const text = diagnostico.prioridades
+    .flatMap((p) => [p.titulo, p.por_que, ...p.incluye])
+    .join(' ')
+    .toLowerCase();
+  const active = new Set(
+    SALES_ROUTE.filter((stop) => stop.matches.some((m) => icons.has(m)) || stop.words.some((w) => text.includes(w))).map(
+      (stop) => stop.id,
+    ),
+  );
 
   return (
     <article className="text-left" aria-labelledby="diagnostico-titulo">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 pb-4">
+      <header className="flex items-center justify-between gap-3 border-b border-white/10 pb-4">
         <div className="flex items-center gap-2.5">
           <LogoMark className="h-7 w-7" />
           <div className="leading-tight">
@@ -154,9 +196,7 @@ export function ResultScreen({
             <p className="text-[11px] text-white/45">Diagnóstico gratuito</p>
           </div>
         </div>
-        <p className="text-xs text-white/45">
-          Preparado para {firstName} · {today}
-        </p>
+        <p className="text-xs text-white/45">Para {firstName}</p>
       </header>
 
       <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -166,67 +206,74 @@ export function ResultScreen({
         <p className="mt-3 text-[15px] leading-relaxed text-white/65">{diagnostico.resumen}</p>
       </motion.div>
 
-      <section className="mt-8" aria-label="Tus prioridades">
-        <p className="text-xs font-medium uppercase tracking-widest text-cyan-300/80">Por dónde empezar</p>
-        <ol className="mt-4 space-y-4">
-          {diagnostico.prioridades.map((item, index) => (
+      <ol className="mt-7 space-y-4" aria-label="Lo que necesita tu negocio">
+        {diagnostico.prioridades.map((item, index) => {
+          const Icon = PRIORITY_ICONS[item.icono];
+          return (
             <motion.li
               key={index}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, delay: 0.15 + index * 0.1 }}
+              transition={{ duration: 0.45, delay: 0.15 + index * 0.12 }}
               className="liquid-glass rounded-2xl p-5"
             >
-              <div className="flex items-start gap-3.5">
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-cyan-300/40 bg-cyan-400/10 text-sm font-semibold text-cyan-200">
-                  {index + 1}
+              <div className="flex items-start gap-4">
+                <span
+                  className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/30 text-cyan-200"
+                  style={{ background: 'linear-gradient(135deg, rgba(0,210,255,0.22), rgba(11,37,81,0.5))' }}
+                  aria-hidden
+                >
+                  <Icon className="h-7 w-7" />
                 </span>
                 <div className="min-w-0">
-                  <h3 className="text-[16px] font-semibold leading-snug">{item.titulo}</h3>
+                  <p className="text-[11px] font-medium uppercase tracking-widest text-cyan-300/80">Necesidad {index + 1}</p>
+                  <h3 className="mt-0.5 text-[18px] font-semibold leading-snug">{item.titulo}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-white/55">{item.por_que}</p>
-                  <ul className="mt-3 space-y-2">
-                    {item.pasos.map((paso, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-sm leading-relaxed text-white/80">
-                        <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
-                        <span>{paso}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </div>
               </div>
+              <ul className="mt-4 grid gap-2 sm:grid-cols-1">
+                {item.incluye.map((punto, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2.5 rounded-xl bg-white/[0.04] px-3.5 py-2.5 text-sm leading-snug text-white/85"
+                  >
+                    <CircleCheck className="mt-0.5 h-4 w-4 shrink-0 text-cyan-300" aria-hidden />
+                    <span>{punto}</span>
+                  </li>
+                ))}
+              </ul>
             </motion.li>
-          ))}
-        </ol>
-      </section>
+          );
+        })}
+      </ol>
 
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.6 }}
-        className="relative mt-6 overflow-hidden rounded-2xl border border-cyan-300/30 p-5"
-        style={{ background: 'linear-gradient(135deg, rgba(0,210,255,0.12), rgba(11,37,81,0.35))' }}
-        aria-label="Siguiente nivel"
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="mt-6 rounded-2xl border border-cyan-300/25 p-5"
+        style={{ background: 'linear-gradient(135deg, rgba(0,210,255,0.1), rgba(11,37,81,0.35))' }}
+        aria-label="Tu sistema de ventas"
       >
-        <div className="flex items-start gap-3.5">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-200">
-            <Rocket className="h-5 w-5" aria-hidden />
-          </span>
-          <div>
-            <h3 className="text-[16px] font-semibold">Lo que haríamos juntos</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-white/75">{diagnostico.siguiente_nivel}</p>
-          </div>
+        <p className="text-center text-xs font-medium uppercase tracking-widest text-cyan-300/80">
+          Tu sistema de ventas con JUALU
+        </p>
+        <div className="mt-4">
+          <SalesRoute active={active} />
         </div>
+        <p className="mt-5 text-center text-sm leading-relaxed text-white/75">{diagnostico.siguiente_nivel}</p>
       </motion.section>
 
-      <p className="mt-6 text-center text-[15px] leading-relaxed text-white/70">{diagnostico.cierre}</p>
+      <p className="mt-6 text-center text-[15px] font-medium leading-relaxed text-white/80">{diagnostico.cierre}</p>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+      <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-center">
         <LinkButton
           href={CALENDAR_URL}
           target="_blank"
           rel="noopener noreferrer"
           icon={<CalendarCheck className="h-4 w-4" aria-hidden />}
-          className="sm:min-w-52"
+          iconRight={<ChevronRight className="h-4 w-4" aria-hidden />}
+          className="sm:min-w-56"
         >
           Agendar mi cita gratis
         </LinkButton>
@@ -236,17 +283,11 @@ export function ResultScreen({
       </div>
 
       <div className="mt-4 flex flex-col items-center gap-1 text-center">
-        <p className="text-xs text-white/40">
-          Un asesor de JUALU también se pondrá en contacto contigo para acompañarte con este plan.
-        </p>
+        <p className="text-xs text-white/40">Un asesor de JUALU también se pondrá en contacto contigo.</p>
         <Button variant="ghost" onClick={onRestart} icon={<RotateCcw className="h-4 w-4" aria-hidden />}>
           Hacer otro diagnóstico
         </Button>
       </div>
-
-      <p className="mt-2 border-t border-white/10 pt-4 text-center text-[11px] text-white/30">
-        Preparado por el equipo JUALU · Cali, Colombia
-      </p>
     </article>
   );
 }

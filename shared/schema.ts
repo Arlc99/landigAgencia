@@ -141,21 +141,27 @@ export type ProgressRequest = z.infer<typeof progressRequestSchema>
  * Diagnóstico que ve el cliente: da valor real (pasos concretos) y deja el trabajo
  * de fondo —ejecución, anuncios, automatización— para el equipo de JUALU.
  */
+/** Iconos con los que la pantalla ilustra cada prioridad del diagnóstico. */
+export const DIAGNOSIS_ICONS = ['web', 'redes', 'whatsapp', 'pagos', 'bot', 'ventas', 'marca', 'anuncios'] as const
+export type DiagnosisIcon = (typeof DIAGNOSIS_ICONS)[number]
+
+// Los máximos son holgados a propósito: el prompt pide textos cortos, pero un texto un poco más largo no debe tumbar el envío.
 export const clientDiagnosisSchema = z.object({
   titulo: z.string().trim().min(5).max(220),
-  resumen: z.string().trim().min(40).max(1300),
+  resumen: z.string().trim().min(20).max(600),
   prioridades: z
     .array(
       z.object({
-        titulo: z.string().trim().min(3).max(200),
-        por_que: z.string().trim().min(10).max(650),
-        pasos: z.array(z.string().trim().min(5).max(450)).min(2).max(6),
+        icono: z.enum(DIAGNOSIS_ICONS),
+        titulo: z.string().trim().min(3).max(160),
+        por_que: z.string().trim().min(10).max(350),
+        incluye: z.array(z.string().trim().min(5).max(220)).min(2).max(4),
       }),
     )
-    .min(3)
-    .max(5),
-  siguiente_nivel: z.string().trim().min(30).max(950),
-  cierre: z.string().trim().min(20).max(500),
+    .min(2)
+    .max(3),
+  siguiente_nivel: z.string().trim().min(20).max(450),
+  cierre: z.string().trim().min(10).max(300),
 })
 export type ClientDiagnosis = z.infer<typeof clientDiagnosisSchema>
 

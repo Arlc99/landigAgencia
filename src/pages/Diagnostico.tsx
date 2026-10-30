@@ -52,8 +52,8 @@ export default function Diagnostico() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mx-auto mt-6 max-w-md text-base leading-[1.5] text-white/60"
           >
-            Responde 5 pasos cortos (menos de 3 minutos) y recibe al instante tu diagnóstico personalizado con los
-            primeros pasos para crecer.
+            Responde 5 pasos cortos (menos de 3 minutos) y recibe al instante tu diagnóstico personalizado:
+            qué necesita tu negocio para vender más.
           </motion.p>
         </div>
 

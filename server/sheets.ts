@@ -16,9 +16,9 @@ export type LeadRow = Record<string, string | undefined>
 
 function diagnosisText(d: ClientDiagnosis): string {
   const priorities = d.prioridades
-    .map((p, i) => `${i + 1}. ${p.titulo}\n   ${p.por_que}\n${p.pasos.map((s) => `   - ${s}`).join('\n')}`)
+    .map((p, i) => `${i + 1}. ${p.titulo}\n   ${p.por_que}\n${p.incluye.map((s) => `   - ${s}`).join('\n')}`)
     .join('\n')
-  return `${d.titulo}\n${d.resumen}\n\n${priorities}\n\nSiguiente nivel: ${d.siguiente_nivel}\n${d.cierre}`
+  return `${d.titulo}\n${d.resumen}\n\n${priorities}\n\n${d.siguiente_nivel}\n${d.cierre}`
 }
 
 function baseRow(submissionId: string, answers: AnswersLike, paso: number): LeadRow {
