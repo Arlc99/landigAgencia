@@ -7,6 +7,7 @@ interface TurnstileApi {
       sitekey: string;
       theme?: 'light' | 'dark' | 'auto';
       appearance?: 'always' | 'execute' | 'interaction-only';
+      size?: 'normal' | 'flexible' | 'compact';
       callback?: (token: string) => void;
       'expired-callback'?: () => void;
       'error-callback'?: () => void;
@@ -57,7 +58,7 @@ interface Props {
 }
 
 /**
- * Captcha de Cloudflare Turnstile. Casi siempre es invisible: solo muestra un desafío si sospecha de un bot.
+ * Captcha de Cloudflare Turnstile. Siempre visible: muestra la casilla "Verifica que eres humano" (casi siempre se completa sola).
  * Si no hay clave configurada no renderiza nada (el servidor tampoco lo exige en ese caso).
  */
 export function Turnstile({ onToken, resetKey = 0 }: Props) {
@@ -75,7 +76,8 @@ export function Turnstile({ onToken, resetKey = 0 }: Props) {
         widgetId.current = api.render(containerRef.current, {
           sitekey: TURNSTILE_SITE_KEY,
           theme: 'dark',
-          appearance: 'interaction-only',
+          appearance: 'always',
+          size: 'flexible',
           callback: (token) => onTokenRef.current(token),
           'expired-callback': () => onTokenRef.current(''),
           'error-callback': () => onTokenRef.current(''),
