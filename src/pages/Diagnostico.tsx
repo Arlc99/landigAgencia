@@ -8,6 +8,12 @@ import { SurveyWizard } from '../diagnostico/SurveyWizard';
 import { SUBMISSION_STORAGE_KEY, useSubmission } from '../diagnostico/useSubmission';
 import { SURVEY_STORAGE_KEY, useSurvey } from '../diagnostico/useSurvey';
 
+/** Estados que ya terminaron la historia: diagnóstico entregado o límite diario alcanzado (reintentar no sirve). */
+function isFinished(state: { phase?: string; errorCode?: string | null } | null | undefined): boolean {
+  if (!state) return false;
+  return state.phase === 'done' || (state.phase === 'error' && (state.errorCode === 'daily_limit' || state.errorCode === 'already_done'));
+}
+
 /**
  * Si se llega a la página desde otro lugar (no recargándola) y quedó un diagnóstico ya entregado guardado,
  * se descarta: la persona debe ver el formulario limpio. Recargar (F5) en la pantalla del resultado sí lo conserva.
@@ -15,7 +21,7 @@ import { SURVEY_STORAGE_KEY, useSurvey } from '../diagnostico/useSurvey';
 function discardDeliveredDiagnosis(): null {
   const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
   if (nav?.type === 'reload') return null;
-  if (loadSession<{ phase?: string }>(SUBMISSION_STORAGE_KEY)?.phase === 'done') {
+  if (isFinished(loadSession<{ phase?: string; errorCode?: string | null }>(SUBMISSION_STORAGE_KEY))) {
     clearSession(SURVEY_STORAGE_KEY, SUBMISSION_STORAGE_KEY);
   }
   return null;
@@ -31,11 +37,11 @@ export default function Diagnostico() {
 
   // Al abandonar la página con un diagnóstico ya entregado, se borra todo: al volver se empieza con el formulario limpio.
   // (Solo se borra el almacenamiento: si el efecto se repite en desarrollo, el estado en memoria lo vuelve a guardar.)
-  const phaseRef = useRef(submission.phase);
-  phaseRef.current = submission.phase;
+  const finishedRef = useRef(false);
+  finishedRef.current = isFinished({ phase: submission.phase, errorCode: submission.errorCode });
   useEffect(
     () => () => {
-      if (phaseRef.current === 'done') clearSession(SURVEY_STORAGE_KEY, SUBMISSION_STORAGE_KEY);
+      if (finishedRef.current) clearSession(SURVEY_STORAGE_KEY, SUBMISSION_STORAGE_KEY);
     },
     [],
   );
