@@ -23,7 +23,12 @@ declare global {
 }
 
 /** Clave pública de Cloudflare Turnstile. Es pública por diseño; la secreta vive solo en el servidor. */
-export const TURNSTILE_SITE_KEY: string = (import.meta.env.VITE_TURNSTILE_SITE_KEY ?? '').trim();
+// En producción se usa la clave del widget de JUALU aunque falte la variable de entorno: así el sitio no queda bloqueado
+// (el servidor sí exige el captcha). En desarrollo queda apagado salvo que se defina VITE_TURNSTILE_SITE_KEY.
+const PRODUCTION_SITE_KEY = '0x4AAAAAAFsETZUkgCwVh6bL';
+export const TURNSTILE_SITE_KEY: string = (
+  import.meta.env.VITE_TURNSTILE_SITE_KEY ?? (import.meta.env.PROD ? PRODUCTION_SITE_KEY : '')
+).trim();
 export const captchaConfigured = TURNSTILE_SITE_KEY.length > 0;
 
 let scriptPromise: Promise<TurnstileApi> | null = null;
